@@ -45,6 +45,8 @@ reg [DATA_WIDTH-1:0] data_array [0:CACHE_LINES-1][0:WORDS_PER-1];
 reg [COUNT_BITS-1:0] refill_req_count;
 reg [COUNT_BITS-1:0] refill_resp_count;
 
+reg resp_pending;
+
 wire [TAG_BITS-1:0] addr_tag;
 wire [INDEX_BITS-1:0] addr_index;
 wire [OFFSET_BITS-1:0] addr_offset;
@@ -128,7 +130,7 @@ begin
         fifo_req_en = 1;
       end
 
-      if(!fifo_resp_empty && refill_resp_count <WORDS_PER)
+      if(!fifo_resp_empty && refill_resp_count <WORDS_PER && !resp_pending) 
          fifo_resp_en = 1;
 
     end
@@ -195,7 +197,8 @@ begin
           if(!fifo_req_full && refill_req_count < WORDS_PER)
             refill_req_count <= refill_req_count + 1;
 
-          if(!fifo_resp_empty && refill_resp_count < WORDS_PER)
+          
+          if(resp_pending && refill_resp_count < WORDS_PER)
             refill_resp_count <= refill_resp_count + 1;
       end
       else if(present_state == IDLE)
@@ -220,14 +223,29 @@ begin
       if(present_state == LOOKUP && cache_hit && reg_read_write)
         data_array[addr_index][addr_offset] <= reg_wdata;
 
-      else if(present_state == REFILL_WAIT && !fifo_resp_empty && refill_resp_count < WORDS_PER)
+      else if(present_state == REFILL_WAIT && resp_pending && refill_resp_count < WORDS_PER)
         data_array[addr_index][refill_resp_index] <= fifo_resp_data;
 
-      if((present_state == REFILL_WAIT) && !fifo_resp_empty && (refill_resp_count == WORDS_PER-1))
+      if((present_state == REFILL_WAIT) && resp_pending && (refill_resp_count == WORDS_PER-1))
         begin
             valid_array[addr_index] <= 1'b1;
             tag_array[addr_index]   <= addr_tag;
         end
   end
+end
+
+always@(posedge clk or negedge rst_n)
+begin
+    if(!rst_n)
+        resp_pending <= 1'b0;
+    else if(present_state == IDLE)
+        resp_pending <= 1'b0;
+    else if(present_state == REFILL_WAIT)
+    begin
+        if(fifo_resp_en)
+            resp_pending <= 1'b1;
+        else if(resp_pending)
+            resp_pending <= 1'b0;
+    end
 end
 endmodule
