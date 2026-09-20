@@ -28,6 +28,7 @@ input wire [DATA_WIDTH-1:0] fifo_resp_data,
 input wire fifo_resp_empty
 );
 
+localparam COUNT_BITS = $clog2(WORDS_PER + 1);
 localparam OFFSET_BITS = $clog2(WORDS_PER);
 localparam INDEX_BITS = $clog2(CACHE_LINES);
 localparam TAG_BITS = ADDR_WIDTH - OFFSET_BITS - INDEX_BITS;
@@ -41,7 +42,8 @@ reg valid_array [0:CACHE_LINES-1];
 reg [TAG_BITS-1:0] tag_array [0:CACHE_LINES-1];
 reg [DATA_WIDTH-1:0] data_array [0:CACHE_LINES-1][0:WORDS_PER-1]; 
 
-reg [WORDS_PER-1:0] refill_req_count,refill_resp_count; //change to $clog2 later
+reg [COUNT_BITS-1:0] refill_req_count;
+reg [COUNT_BITS-1:0] refill_resp_count;
 
 wire [TAG_BITS-1:0] addr_tag;
 wire [INDEX_BITS-1:0] addr_index;
@@ -217,7 +219,7 @@ begin
         data_array[addr_index][addr_offset] <= reg_wdata;
 
       if(present_state == REFILL_WAIT && !fifo_resp_empty && refill_resp_count < WORDS_PER)
-        data_array[addr_index][addr_offset] <= fifo_resp_data;
+        data_array[addr_index][refill_resp_count] <= fifo_resp_data;
 
       if((present_state == REFILL_WAIT) && !fifo_resp_empty && (refill_resp_count == WORDS_PER-1))
         begin
