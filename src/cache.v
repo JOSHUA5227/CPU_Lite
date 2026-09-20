@@ -56,6 +56,8 @@ assign addr_offset = reg_addr[OFFSET_BITS-1:0];
 wire cache_hit;
 assign cache_hit = valid_array[addr_index] && (tag_array[addr_index] == addr_tag);
 
+wire [OFFSET_BITS-1:0] refill_resp_index;
+assign refill_resp_index = refill_resp_count[OFFSET_BITS-1:0];
 
 localparam IDLE = 3'd0;
 localparam LOOKUP = 3'd1;
@@ -218,8 +220,8 @@ begin
       if(present_state == LOOKUP && cache_hit && reg_read_write)
         data_array[addr_index][addr_offset] <= reg_wdata;
 
-      if(present_state == REFILL_WAIT && !fifo_resp_empty && refill_resp_count < WORDS_PER)
-        data_array[addr_index][refill_resp_count] <= fifo_resp_data;
+      else if(present_state == REFILL_WAIT && !fifo_resp_empty && refill_resp_count < WORDS_PER)
+        data_array[addr_index][refill_resp_index] <= fifo_resp_data;
 
       if((present_state == REFILL_WAIT) && !fifo_resp_empty && (refill_resp_count == WORDS_PER-1))
         begin
