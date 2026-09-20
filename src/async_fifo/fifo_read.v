@@ -1,10 +1,13 @@
-module fifo_read #(parameter DEPTH = 8)(
+module fifo_read #(
+    parameter DEPTH = 8
+)(
     clk,
     rst_n,
     r_en,
+    sync_w_ptr_gray,
     empty,
     r_ptr,
-    sync_w_ptr
+    r_ptr_gray
 );
 
 localparam ADDR_WIDTH = $clog2(DEPTH);
@@ -14,26 +17,22 @@ input wire clk;
 input wire rst_n;
 input wire r_en;
 
-input wire [PTR_WIDTH-1:0] sync_w_ptr;
+input wire [PTR_WIDTH-1:0] sync_w_ptr_gray;
 
 output wire empty;
-output reg  [PTR_WIDTH-1:0] r_ptr;
+output reg [PTR_WIDTH-1:0] r_ptr;
+output wire [PTR_WIDTH-1:0] r_ptr_gray;
 
-assign empty = (r_ptr == sync_w_ptr);
+assign r_ptr_gray = r_ptr ^ (r_ptr >> 1);
+
+assign empty = (r_ptr_gray == sync_w_ptr_gray);
 
 always @(posedge clk or negedge rst_n)
 begin
     if(!rst_n)
-    begin
         r_ptr <= 0;
-    end
-    else
-    begin
-        if(!empty && r_en)
-        begin
-            r_ptr <= r_ptr + 1'b1;
-        end
-    end
+    else if(r_en && !empty)
+        r_ptr <= r_ptr + 1'b1;
 end
 
 endmodule

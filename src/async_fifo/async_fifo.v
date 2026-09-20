@@ -11,16 +11,20 @@ module async_fifo #(
     r_en,
     w_en,
     full,
-    empty,
-    r_full,
-    fifo_count
+    empty
 );
 
 localparam ADDR_WIDTH = $clog2(DEPTH);
 localparam PTR_WIDTH  = ADDR_WIDTH + 1;
 
+
+/* ============================================================
+ * PORTS
+ * ============================================================ */
+
 input wire rclk;
 input wire wclk;
+
 input wire w_rst_n;
 input wire r_rst_n;
 
@@ -34,61 +38,45 @@ output wire [WIDTH-1:0] r_data;
 output wire full;
 output wire empty;
 
-output wire [3:0] fifo_count;
 
-output wire r_full;
 /* ============================================================
- *  * POINTERS
- *   * ============================================================ */
+ * POINTERS
+ * ============================================================ */
 
-wire [PTR_WIDTH-1:0] r_ptr;
+/*
+ * Binary pointers are maintained locally in their own
+ * clock domains.
+ *
+ * w_ptr  -> write domain
+ * r_ptr  -> read domain
+ */
+
 wire [PTR_WIDTH-1:0] w_ptr;
+wire [PTR_WIDTH-1:0] r_ptr;
 
-wire [PTR_WIDTH-1:0] r_ptr_gray;
 wire [PTR_WIDTH-1:0] w_ptr_gray;
+wire [PTR_WIDTH-1:0] r_ptr_gray;
 
 
 /* ============================================================
- *  * SYNCHRONIZED POINTERS
- *   * ============================================================ */
+ * SYNCHRONIZED GRAY POINTERS
+ * ============================================================ */
+
+/*
+ * r_ptr_gray crosses from the read clock domain
+ * into the write clock domain.
+ *
+ * w_ptr_gray crosses from the write clock domain
+ * into the read clock domain.
+ */
 
 wire [PTR_WIDTH-1:0] sync_r_ptr_gray;
 wire [PTR_WIDTH-1:0] sync_w_ptr_gray;
 
-wire [PTR_WIDTH-1:0] sync_r_ptr;
-wire [PTR_WIDTH-1:0] sync_w_ptr;
-
 
 /* ============================================================
- *  * FIFO COUNT
- *   * ============================================================ */
-
-wire [PTR_WIDTH:0] fifo_count_full;
-assign r_full = (sync_w_ptr == {~r_ptr[PTR_WIDTH-1], r_ptr[PTR_WIDTH-2:0]});
-
-
-/* ============================================================
- *  * BINARY -> GRAY
- *   * ============================================================ */
-
-b2g #(
-    .WIDTH(PTR_WIDTH)
-) g_r (
-    .inp(r_ptr),
-    .outp(r_ptr_gray)
-);
-
-b2g #(
-    .WIDTH(PTR_WIDTH)
-) g_w (
-    .inp(w_ptr),
-    .outp(w_ptr_gray)
-);
-
-
-/* ============================================================
- *  * READ POINTER -> WRITE DOMAIN
- *   * ============================================================ */
+ * READ POINTER -> WRITE DOMAIN
+ * ============================================================ */
 
 sync_multi #(
     .WIDTH(PTR_WIDTH)
@@ -101,8 +89,8 @@ sync_multi #(
 
 
 /* ============================================================
- *  * WRITE POINTER -> READ DOMAIN
- *   * ============================================================ */
+ * WRITE POINTER -> READ DOMAIN
+ * ============================================================ */
 
 sync_multi #(
     .WIDTH(PTR_WIDTH)
@@ -115,27 +103,8 @@ sync_multi #(
 
 
 /* ============================================================
- *  * GRAY -> BINARY
- *   * ============================================================ */
-
-g2b #(
-    .WIDTH(PTR_WIDTH)
-) b_r (
-    .inp(sync_r_ptr_gray),
-    .outp(sync_r_ptr)
-);
-
-g2b #(
-    .WIDTH(PTR_WIDTH)
-) b_w (
-    .inp(sync_w_ptr_gray),
-    .outp(sync_w_ptr)
-);
-
-
-/* ============================================================
- *  * WRITE CONTROL
- *   * ============================================================ */
+ * WRITE CONTROL
+ * ============================================================ */
 
 fifo_write #(
     .DEPTH(DEPTH)
@@ -143,15 +112,16 @@ fifo_write #(
     .clk(wclk),
     .rst_n(w_rst_n),
     .w_en(w_en),
+    .sync_r_ptr_gray(sync_r_ptr_gray),
     .full(full),
     .w_ptr(w_ptr),
-    .sync_r_ptr(sync_r_ptr)
+    .w_ptr_gray(w_ptr_gray)
 );
 
 
 /* ============================================================
- *  * READ CONTROL
- *   * ============================================================ */
+ * READ CONTROL
+ * ============================================================ */
 
 fifo_read #(
     .DEPTH(DEPTH)
@@ -159,27 +129,16 @@ fifo_read #(
     .clk(rclk),
     .rst_n(r_rst_n),
     .r_en(r_en),
+    .sync_w_ptr_gray(sync_w_ptr_gray),
     .empty(empty),
     .r_ptr(r_ptr),
-    .sync_w_ptr(sync_w_ptr)
+    .r_ptr_gray(r_ptr_gray)
 );
 
 
 /* ============================================================
- *  * FIFO COUNT
- *   *
- *    * The pointer subtraction is PTR_WIDTH bits wide.
- *     * Only the lower four bits are exposed as the FIFO count.
- *      *
- *       * For DEPTH = 8, valid FIFO counts are 0 through 8.
- *        * ============================================================ */
-
-assign fifo_count_full = {1'b0,sync_w_ptr} - {1'b0,r_ptr};
-assign fifo_count = fifo_count_full[3:0];
-
-/* ============================================================
- *  * MEMORY
- *   * ============================================================ */
+ * MEMORY
+ * ============================================================ */
 
 mem #(
     .WIDTH(WIDTH),
@@ -189,6 +148,7 @@ mem #(
     .r_clk(rclk),
 
     .w_en(w_en && !full),
+    .r_en(r_en && !empty),
 
     .w_data(w_data),
     .r_data(r_data),
