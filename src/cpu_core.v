@@ -78,9 +78,11 @@ reg [DATA_WIDTH-1:0] R [0:15];
 
 reg Z,N,C,V;
 reg [DATA_WIDTH-1:0] op_a,op_b;
-reg [2*DATA_WIDTH-1:0] alu_res;
 reg [DATA_WIDTH-1:0] result_op;
 
+reg [DATA_WIDTH-1:0] reg_rdata;
+
+reg [2*DATA_WIDTH-1:0] alu_res;
 reg [2:0] present_state,next_state;
 
 reg [DATA_WIDTH-1:0] instruction_reg;
@@ -140,7 +142,7 @@ begin
 end
 
 
-//FETCH State
+//FETCH State 
 always@(posedge clk or negedge rst_n)
 begin
   if(!rst_n)
@@ -361,7 +363,7 @@ begin
      pc <= 0;
   else
   begin
-      if(present_state == EXECUTE)
+      if(present_state == DECODE)
       begin
          case(opcode)
          JMP: pc <= imm;
@@ -372,7 +374,7 @@ begin
          BGE: pc <= (!(psr[1] ^ psr[3])) ? imm : pc + 1; 
          BLTU: pc <= (!psr[2]) ? imm : pc + 1; 
          BGEU: pc <= (psr[2]) ? imm : pc + 1; 
-         JMP_REG: pc <= R[rs1][PROG_ADDR_WIDTH-1:0]; 
+         JMP_REG: pc <= R[rs1][PROG_ADDR_WIDTH-1:0];
          default: pc <=  pc + 1;         
          endcase
       end
@@ -416,6 +418,14 @@ begin
   end
 end
 
+always@(posedge clk or negedge rst_n)
+begin
+  if(!rst_n)
+    reg_rdata <= 0;
+  else
+    reg_rdata <= (present_state == MEMORY && cpu_ready) ? rdata : reg_rdata;
+end
+
 //WRITEBACK State
 integer i;
 always@(posedge clk or negedge rst_n)
@@ -430,7 +440,7 @@ begin
      case(opcode)
      ADD,SUB,MUL,AND,OR,NOT,XOR,SHL,SHR,SAR,ROL,ROR,EQ,SLT,SLTU,ADDI,SUBI,ANDI,ORI,XORI: R[rd] <= alu_res[31:0];
      LOAD_IMM,MOV,LUI: R[rd] <= result_op;
-     LOAD,LOAD_IND: R[rd] <= rdata;
+     LOAD,LOAD_IND: R[rd] <= reg_rdata;
      endcase
   end
 end
