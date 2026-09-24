@@ -7,8 +7,24 @@ module cpu #(
     input wire slow_clk,
 
     input wire fast_rst_n,
-    input wire slow_rst_n
+    input wire slow_rst_n,
+
+    // PROGRAM MEMORY PORTS
+    output wire [PROG_ADDR_WIDTH-1:0] cpu_pc,
+    output wire [DATA_WIDTH-1:0] instruction,
+    
+    // DATA MEMORY PORTS
+    
+    output wire [DATA_ADDR_WIDTH-1:0] mem_addr,
+    output wire [DATA_WIDTH-1:0]      mem_wdata,
+
+    output wire mem_read_en,
+    output wire mem_write_en,
+
+    output wire [DATA_WIDTH-1:0] mem_rdata,
+    output wire mem_rvalid
 );
+
 
     // ============================================================
     // PARAMETERS
@@ -22,15 +38,6 @@ module cpu #(
 
     localparam RESP_FIFO_WIDTH =
         DATA_WIDTH;
-
-
-    // ============================================================
-    // CPU <-> PROGRAM MEMORY
-    // ============================================================
-
-    wire [PROG_ADDR_WIDTH-1:0] cpu_pc;
-    wire [DATA_WIDTH-1:0] instruction;
-
 
     // ============================================================
     // CPU <-> CACHE
@@ -72,20 +79,6 @@ module cpu #(
 
 
     // ============================================================
-    // MEMORY CONTROLLER <-> DATA MEMORY
-    // ============================================================
-
-    wire [DATA_ADDR_WIDTH-1:0] mem_addr;
-    wire [DATA_WIDTH-1:0]      mem_wdata;
-
-    wire mem_read_en;
-    wire mem_write_en;
-
-    wire [DATA_WIDTH-1:0] mem_rdata;
-    wire mem_rvalid;
-
-
-    // ============================================================
     // CPU CORE
     // ============================================================
 
@@ -107,22 +100,6 @@ module cpu #(
         .read_write  (cpu_read_write),
         .addr        (cpu_addr),
         .wdata       (cpu_wdata)
-    );
-
-
-    // ============================================================
-    // PROGRAM MEMORY
-    // ============================================================
-
-    program_memory #(
-        .ADDR_WIDTH(PROG_ADDR_WIDTH),
-        .DATA_WIDTH(DATA_WIDTH)
-    ) u_program_memory (
-        .clk   (fast_clk),
-        .rst_n  (fast_rst_n),
-
-        .addr  (cpu_pc),
-        .wdata (instruction)
     );
 
 
@@ -272,25 +249,5 @@ module cpu #(
     );
 
 
-    // ============================================================
-    // DATA MEMORY
-    // ============================================================
-
-    data_memory #(
-        .ADDR_WIDTH(DATA_ADDR_WIDTH),
-        .DATA_WIDTH(DATA_WIDTH)
-    ) u_data_memory (
-        .clk   (slow_clk),
-        .rst_n  (slow_rst_n),
-
-        .read_en  (mem_read_en),
-        .write_en (mem_write_en),
-
-        .addr  (mem_addr),
-        .wdata (mem_wdata),
-
-        .rdata  (mem_rdata),
-        .rvalid (mem_rvalid)
-    );
 
 endmodule

@@ -57,7 +57,8 @@ wire [PTR_WIDTH-1:0] r_ptr;
 wire [PTR_WIDTH-1:0] w_ptr_gray;
 wire [PTR_WIDTH-1:0] r_ptr_gray;
 
-
+reg [PTR_WIDTH-1:0] w_ptr_gray_reg;
+reg [PTR_WIDTH-1:0] r_ptr_gray_reg;
 /* ============================================================
  * SYNCHRONIZED GRAY POINTERS
  * ============================================================ */
@@ -77,13 +78,20 @@ wire [PTR_WIDTH-1:0] sync_w_ptr_gray;
 /* ============================================================
  * READ POINTER -> WRITE DOMAIN
  * ============================================================ */
+always@(posedge rclk or negedge r_rst_n)
+begin
+    if(!r_rst_n)
+      r_ptr_gray_reg <= 0;
+    else
+      r_ptr_gray_reg <= r_ptr_gray;
+end
 
 sync_multi #(
     .WIDTH(PTR_WIDTH)
 ) sync_r (
     .clk(wclk),
     .rst_n(w_rst_n),
-    .din(r_ptr_gray),
+    .din(r_ptr_gray_reg),
     .dout(sync_r_ptr_gray)
 );
 
@@ -92,12 +100,20 @@ sync_multi #(
  * WRITE POINTER -> READ DOMAIN
  * ============================================================ */
 
+always@(posedge wclk or negedge w_rst_n)
+begin
+    if(!w_rst_n)
+      w_ptr_gray_reg <= 0;
+    else
+      w_ptr_gray_reg <= w_ptr_gray;
+end
+
 sync_multi #(
     .WIDTH(PTR_WIDTH)
 ) sync_w (
     .clk(rclk),
     .rst_n(r_rst_n),
-    .din(w_ptr_gray),
+    .din(w_ptr_gray_reg),
     .dout(sync_w_ptr_gray)
 );
 
