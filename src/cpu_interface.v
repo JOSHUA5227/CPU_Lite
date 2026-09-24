@@ -1,4 +1,4 @@
-module cpu #(
+module cpu_interface #(
     parameter PROG_ADDR_WIDTH = 12,
     parameter DATA_ADDR_WIDTH = 14,
     parameter DATA_WIDTH      = 32
