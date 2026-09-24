@@ -57,8 +57,8 @@ localparam BLT = 8'h22;
 localparam BGE = 8'h23;
 localparam HALT = 8'hFF;
 localparam OP_XOR = 8'h10;
-localparam ROL = 8'h14;
-localparam ROR = 8'h15;
+localparam OP_ROL = 8'h14;
+localparam OP_ROR = 8'h15;
 localparam ANDI = 8'h18;
 localparam ORI = 8'h19;
 localparam XORI = 8'h1A;
@@ -159,7 +159,7 @@ begin
    ADD,SUB,MUL,OP_AND,OP_OR,CMP,EQ,OP_XOR,SLT,SLTU: op_b = R[rs2];
    OP_NOT: op_b = 0;
    ADDI,SUBI: op_b = { {DATA_WIDTH-12{imm[11]}},imm};
-   SHL,SHR,SAR,ROL,ROR:op_b = { {DATA_WIDTH-5{1'b0}}, R[rs2][4:0]}; 
+   SHL,SHR,SAR,OP_ROL,OP_ROR:op_b = { {DATA_WIDTH-5{1'b0}}, R[rs2][4:0]}; 
    ANDI,ORI,XORI: op_b = { {DATA_WIDTH-12{1'b0}},imm};
    default:
    begin
@@ -187,7 +187,7 @@ begin
   end
   SUB,SUBI,CMP:
   begin
-    alu_res[31:0] = op_a - op_b;
+    alu_res = op_a - op_b;
     C = op_a >= op_b;
     Z = alu_res == 0;
     N = alu_res[31];
@@ -195,7 +195,7 @@ begin
   end
   MUL:
   begin
-      alu_res[31:0] = op_a * op_b;
+      alu_res = op_a * op_b;
       Z = (alu_res[31:0] == 0);
       N = alu_res[31];
   end
@@ -249,7 +249,7 @@ begin
     N = alu_res[31];
   end
   
-  ROL:
+  OP_ROL:
   begin
       if(op_b[4:0] == 0)
         alu_res[31:0] = op_a;
@@ -259,7 +259,7 @@ begin
     N = alu_res[31];
   end
 
-  ROR:
+  OP_ROR:
   begin
       if(op_b[4:0] == 0)
         alu_res[31:0] = op_a;
@@ -339,7 +339,7 @@ begin
         psr[2] <= C;
         psr[3] <= V;
        end
-       MUL,OP_AND,OP_OR,OP_NOT,OP_XOR,SHL,SHR,SAR,ROL,ROR,ANDI,ORI,XORI:
+       MUL,OP_AND,OP_OR,OP_NOT,OP_XOR,SHL,SHR,SAR,OP_ROL,OP_ROR,ANDI,ORI,XORI:
        begin
         psr[0] <= Z;
         psr[1] <= N;
@@ -438,7 +438,7 @@ begin
   else if(present_state == WRITEBACK)
   begin
      case(opcode)
-     ADD,SUB,MUL,OP_AND,OP_OR,OP_NOT,OP_XOR,SHL,SHR,SAR,ROL,ROR,EQ,SLT,SLTU,ADDI,SUBI,ANDI,ORI,XORI: R[rd] <= alu_res[31:0];
+     ADD,SUB,MUL,OP_AND,OP_OR,OP_NOT,OP_XOR,SHL,SHR,SAR,OP_ROL,OP_ROR,EQ,SLT,SLTU,ADDI,SUBI,ANDI,ORI,XORI: R[rd] <= alu_res[31:0];
      LOAD_IMM,MOV,LUI: R[rd] <= result_op;
      LOAD,LOAD_IND: R[rd] <= reg_rdata;
      endcase
