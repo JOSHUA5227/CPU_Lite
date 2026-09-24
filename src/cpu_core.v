@@ -39,9 +39,9 @@ localparam STORE_IND = 8'h05;
 localparam ADD = 8'h06;
 localparam SUB = 8'h07;
 localparam MUL = 8'h08;
-localparam AND = 8'h09;
-localparam OR = 8'h0A;
-localparam NOT = 8'h0B;
+localparam OP_AND = 8'h09;
+localparam OP_OR = 8'h0A;
+localparam OP_NOT = 8'h0B;
 localparam CMP = 8'h0C;
 localparam EQ = 8'h0D;
 localparam ADDI = 8'h16;
@@ -56,7 +56,7 @@ localparam BNE = 8'h21;
 localparam BLT = 8'h22;
 localparam BGE = 8'h23;
 localparam HALT = 8'hFF;
-localparam XOR = 8'h10;
+localparam OP_XOR = 8'h10;
 localparam ROL = 8'h14;
 localparam ROR = 8'h15;
 localparam ANDI = 8'h18;
@@ -156,8 +156,8 @@ always@(*)
 begin
    op_a = R[rs1];
    case(opcode)
-   ADD,SUB,MUL,AND,OR,CMP,EQ,XOR,SLT,SLTU: op_b = R[rs2];
-   NOT: op_b = 0;
+   ADD,SUB,MUL,OP_AND,OP_OR,CMP,EQ,OP_XOR,SLT,SLTU: op_b = R[rs2];
+   OP_NOT: op_b = 0;
    ADDI,SUBI: op_b = { {DATA_WIDTH-12{imm[11]}},imm};
    SHL,SHR,SAR,ROL,ROR:op_b = { {DATA_WIDTH-5{1'b0}}, R[rs2][4:0]}; 
    ANDI,ORI,XORI: op_b = { {DATA_WIDTH-12{1'b0}},imm};
@@ -187,7 +187,7 @@ begin
   end
   SUB,SUBI,CMP:
   begin
-    alu_res = op_a - op_b;
+    alu_res[31:0] = op_a - op_b;
     C = op_a >= op_b;
     Z = alu_res == 0;
     N = alu_res[31];
@@ -195,86 +195,86 @@ begin
   end
   MUL:
   begin
-      alu_res = op_a * op_b;
+      alu_res[31:0] = op_a * op_b;
       Z = (alu_res[31:0] == 0);
       N = alu_res[31];
   end
-  AND,ANDI:
+  OP_AND,ANDI:
   begin
-    alu_res = op_a & op_b;
-    Z = alu_res == 0;
+    alu_res[31:0] = op_a & op_b;
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
   end
 
-  OR,ORI:
+  OP_OR,ORI:
   begin
-    alu_res = op_a | op_b;
-    Z = alu_res == 0;
+    alu_res[31:0] = op_a | op_b;
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
   end
 
-  XOR,XORI:
+  OP_XOR,XORI:
   begin
-    alu_res = op_a ^ op_b;
-    Z = alu_res == 0;
+    alu_res[31:0] = op_a ^ op_b;
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
   end
 
-  NOT:
+  OP_NOT:
   begin
-    alu_res = ~op_a;
-    Z = alu_res == 0;
+    alu_res[31:0] = ~op_a;
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
   end
 
 
   SHL:
   begin
-    alu_res = op_a << op_b[4:0];
-    Z = alu_res == 0;
+    alu_res[31:0] = op_a << op_b[4:0];
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
   end
 
   SHR:
   begin
-    alu_res = op_a >> op_b[4:0];
-    Z = alu_res == 0;
+    alu_res[31:0] = op_a >> op_b[4:0];
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
   end
 
   SAR:
   begin
-    alu_res = $signed(op_a) >>> op_b[4:0];
-    Z = alu_res == 0;
+    alu_res[31:0] = $signed(op_a) >>> op_b[4:0];
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
   end
   
   ROL:
   begin
       if(op_b[4:0] == 0)
-        alu_res = op_a;
+        alu_res[31:0] = op_a;
       else
-        alu_res = (op_a << op_b[4:0]) | (op_a >> ( 32- op_b[4:0]));
-    Z = alu_res == 0;
+        alu_res[31:0] = (op_a << op_b[4:0]) | (op_a >> ( 32- op_b[4:0]));
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
   end
 
   ROR:
   begin
       if(op_b[4:0] == 0)
-        alu_res = op_a;
+        alu_res[31:0] = op_a;
       else
-        alu_res = (op_a >> op_b[4:0]) | (op_a << ( 32- op_b[4:0]));
+        alu_res[31:0] = (op_a >> op_b[4:0]) | (op_a << ( 32- op_b[4:0]));
 
-    Z = alu_res == 0;
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
   end
 
   EQ:
   begin
-    alu_res = (op_a == op_b) ? 1 : 0;
+    alu_res[31:0] = (op_a == op_b) ? 1 : 0;
     
-    Z = alu_res == 0;
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
     C = 0;
     V = 0;
@@ -283,9 +283,9 @@ begin
 
   SLT:
   begin
-    alu_res = ( $signed(op_a) < $signed(op_b)) ? 1 : 0;
+    alu_res[31:0] = ( $signed(op_a) < $signed(op_b)) ? 1 : 0;
     
-    Z = alu_res == 0;
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
     C = 0;
     V = 0;
@@ -294,9 +294,9 @@ begin
 
   SLTU:
   begin
-    alu_res = ( op_a < op_b) ? 1 : 0;
+    alu_res[31:0] = ( op_a < op_b) ? 1 : 0;
     
-    Z = alu_res == 0;
+    Z = alu_res[31:0] == 0;
     N = alu_res[31];
     C = 0;
     V = 0;
@@ -339,7 +339,7 @@ begin
         psr[2] <= C;
         psr[3] <= V;
        end
-       MUL,AND,OR,NOT,XOR,SHL,SHR,SAR,ROL,ROR,ANDI,ORI,XORI:
+       MUL,OP_AND,OP_OR,OP_NOT,OP_XOR,SHL,SHR,SAR,ROL,ROR,ANDI,ORI,XORI:
        begin
         psr[0] <= Z;
         psr[1] <= N;
@@ -438,7 +438,7 @@ begin
   else if(present_state == WRITEBACK)
   begin
      case(opcode)
-     ADD,SUB,MUL,AND,OR,NOT,XOR,SHL,SHR,SAR,ROL,ROR,EQ,SLT,SLTU,ADDI,SUBI,ANDI,ORI,XORI: R[rd] <= alu_res[31:0];
+     ADD,SUB,MUL,OP_AND,OP_OR,OP_NOT,OP_XOR,SHL,SHR,SAR,ROL,ROR,EQ,SLT,SLTU,ADDI,SUBI,ANDI,ORI,XORI: R[rd] <= alu_res[31:0];
      LOAD_IMM,MOV,LUI: R[rd] <= result_op;
      LOAD,LOAD_IND: R[rd] <= reg_rdata;
      endcase
