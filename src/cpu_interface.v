@@ -11,7 +11,7 @@ module cpu #(
 
     // PROGRAM MEMORY PORTS
     output wire [PROG_ADDR_WIDTH-1:0] cpu_pc,
-    output wire [DATA_WIDTH-1:0] instruction,
+    input wire [DATA_WIDTH-1:0] instruction,
     
     // DATA MEMORY PORTS
     
@@ -21,8 +21,8 @@ module cpu #(
     output wire mem_read_en,
     output wire mem_write_en,
 
-    output wire [DATA_WIDTH-1:0] mem_rdata,
-    output wire mem_rvalid
+    input wire [DATA_WIDTH-1:0] mem_rdata,
+    input wire mem_rvalid
 );
 
 
