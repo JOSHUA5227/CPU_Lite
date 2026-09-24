@@ -187,7 +187,7 @@ begin
   end
   SUB,SUBI,CMP:
   begin
-    alu_res = op_a - op_b;
+    alu_res[32:0] = op_a - op_b;
     C = op_a >= op_b;
     Z = alu_res == 0;
     N = alu_res[31];
