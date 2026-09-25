@@ -1,0 +1,14 @@
+ 
+****************************************
+Report : clock_skew
+Design : cpu_interface
+Version: S-2021.06-SP4
+Date   : Fri Sep 25 10:08:20 2026
+****************************************
+
+                 Rise      Fall  Min Rise  Min fall        Uncertainty
+Object          Delay     Delay     Delay     Delay     Plus      Minus
+--------------------------------------------------------------------------------
+slow_clk            -         -         -         -      0.14      0.14
+fast_clk            -         -         -         -      0.07      0.07
+1

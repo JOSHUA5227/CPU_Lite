@@ -1,0 +1,21 @@
+ 
+****************************************
+Report : clocks
+Design : cpu_interface
+Version: S-2021.06-SP4
+Date   : Fri Sep 25 10:07:52 2026
+****************************************
+
+Attributes:
+    d - dont_touch_network
+    f - fix_hold
+    p - propagated_clock
+    G - generated_clock
+    g - lib_generated_clock
+
+Clock          Period   Waveform            Attrs     Sources
+--------------------------------------------------------------------------------
+fast_clk         6.67   {0 3.33335}                   {fast_clk}
+slow_clk        14.29   {0 7.14285}                   {slow_clk}
+--------------------------------------------------------------------------------
+1

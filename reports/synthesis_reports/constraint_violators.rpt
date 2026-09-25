@@ -1,0 +1,20 @@
+ 
+****************************************
+Report : constraint
+        -all_violators
+Design : cpu_interface
+Version: S-2021.06-SP4
+Date   : Fri Sep 25 10:07:36 2026
+****************************************
+
+
+   max_leakage_power
+
+                             Required        Actual
+   Design                   Leakage Power  Leakage Power     Slack
+   -----------------------------------------------------------------
+   cpu_interface                0.00       886524224.00   -886524224.00
+                                                                    (VIOLATED)
+
+
+1

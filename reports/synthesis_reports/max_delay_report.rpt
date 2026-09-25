@@ -1,0 +1,2465 @@
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -max_paths 20
+Design : cpu_interface
+Version: S-2021.06-SP4
+Date   : Fri Sep 25 10:04:19 2026
+****************************************
+
+ # A fanout number of 1000 was used for high fanout net computations.
+
+Operating Conditions: ss0p75v25c   Library: saed32lvt_ss0p75v25c
+Wire Load Model Mode: enclosed
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[14][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4262/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[14][31]/D (DFFARX1_LVT)                0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[14][31]/CLK (DFFARX1_LVT)              0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[6][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4525/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[6][31]/D (DFFARX1_LVT)                 0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[6][31]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[15][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4229/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[15][31]/D (DFFARX1_LVT)                0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[15][31]/CLK (DFFARX1_LVT)              0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[13][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4296/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[13][31]/D (DFFARX1_LVT)                0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[13][31]/CLK (DFFARX1_LVT)              0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[12][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4328/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[12][31]/D (DFFARX1_LVT)                0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[12][31]/CLK (DFFARX1_LVT)              0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[11][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4360/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[11][31]/D (DFFARX1_LVT)                0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[11][31]/CLK (DFFARX1_LVT)              0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[10][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4392/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[10][31]/D (DFFARX1_LVT)                0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[10][31]/CLK (DFFARX1_LVT)              0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[9][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4426/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[9][31]/D (DFFARX1_LVT)                 0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[9][31]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[8][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4458/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[8][31]/D (DFFARX1_LVT)                 0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[8][31]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[7][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4492/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[7][31]/D (DFFARX1_LVT)                 0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[7][31]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[5][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4559/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[5][31]/D (DFFARX1_LVT)                 0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[5][31]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[4][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4593/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[4][31]/D (DFFARX1_LVT)                 0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[4][31]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[3][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4627/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[3][31]/D (DFFARX1_LVT)                 0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[3][31]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[2][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4659/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[2][31]/D (DFFARX1_LVT)                 0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[2][31]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[1][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4693/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[1][31]/D (DFFARX1_LVT)                 0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[1][31]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[0][31]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/CO (FADDX1_LVT)                        0.13       5.26 f
+  u_cpu_core/U1353/S (FADDX1_LVT)                         0.15       5.41 f
+  u_cpu_core/U2412/Y (AOI22X1_LVT)                        0.16       5.56 r
+  u_cpu_core/U2413/Y (AND2X1_LVT)                         0.06       5.62 r
+  u_cpu_core/U2415/Y (AND2X1_LVT)                         0.06       5.68 r
+  u_cpu_core/U463/Y (OA221X1_LVT)                         0.08       5.76 r
+  u_cpu_core/U2500/Y (NAND4X0_LVT)                        0.07       5.83 f
+  u_cpu_core/U4227/Y (INVX0_LVT)                          0.06       5.89 r
+  u_cpu_core/U374/Y (NAND3X0_LVT)                         0.21       6.09 f
+  u_cpu_core/U4725/Y (AO22X1_LVT)                         0.24       6.34 f
+  u_cpu_core/R_reg[0][31]/D (DFFARX1_LVT)                 0.00       6.34 f
+  data arrival time                                                  6.34
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[0][31]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.34
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.16
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[27]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[27]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[27]/Q (DFFARX1_LVT)      0.24       0.24 r
+  u_cpu_core/U489/Y (NAND2X0_LVT)                         0.07       0.31 f
+  u_cpu_core/U359/Y (INVX0_LVT)                           0.11       0.42 r
+  u_cpu_core/U455/Y (AOI22X1_LVT)                         0.14       0.55 f
+  u_cpu_core/U508/Y (OA222X2_LVT)                         0.23       0.78 f
+  u_cpu_core/U982/Y (NAND2X0_LVT)                         0.16       0.94 r
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.17       1.12 r
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.10       1.22 f
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.11       1.33 r
+  u_cpu_core/U1351/Y (NAND2X0_LVT)                        0.06       1.38 f
+  u_cpu_core/U3134/CO (FADDX1_LVT)                        0.14       1.52 f
+  u_cpu_core/U3133/CO (FADDX1_LVT)                        0.12       1.65 f
+  u_cpu_core/U3132/CO (FADDX1_LVT)                        0.12       1.77 f
+  u_cpu_core/U3128/CO (FADDX1_LVT)                        0.12       1.89 f
+  u_cpu_core/U3127/CO (FADDX1_LVT)                        0.12       2.02 f
+  u_cpu_core/U3120/CO (FADDX1_LVT)                        0.12       2.14 f
+  u_cpu_core/U3119/CO (FADDX1_LVT)                        0.12       2.27 f
+  u_cpu_core/U3118/CO (FADDX1_LVT)                        0.13       2.39 f
+  u_cpu_core/U3117/CO (FADDX1_LVT)                        0.13       2.52 f
+  u_cpu_core/U3125/CO (FADDX1_LVT)                        0.13       2.65 f
+  u_cpu_core/U3124/CO (FADDX1_LVT)                        0.15       2.80 f
+  u_cpu_core/U3123/CO (FADDX1_LVT)                        0.12       2.92 f
+  u_cpu_core/U3122/CO (FADDX1_LVT)                        0.13       3.05 f
+  u_cpu_core/U3114/CO (FADDX1_LVT)                        0.13       3.18 f
+  u_cpu_core/U3113/CO (FADDX1_LVT)                        0.13       3.30 f
+  u_cpu_core/U3112/CO (FADDX1_LVT)                        0.13       3.43 f
+  u_cpu_core/U3111/CO (FADDX1_LVT)                        0.13       3.55 f
+  u_cpu_core/U3109/CO (FADDX1_LVT)                        0.13       3.68 f
+  u_cpu_core/U3108/CO (FADDX1_LVT)                        0.13       3.81 f
+  u_cpu_core/U3107/CO (FADDX1_LVT)                        0.13       3.93 f
+  u_cpu_core/U3106/CO (FADDX1_LVT)                        0.13       4.06 f
+  u_cpu_core/U3104/CO (FADDX1_LVT)                        0.13       4.19 f
+  u_cpu_core/U3103/CO (FADDX1_LVT)                        0.13       4.31 f
+  u_cpu_core/U3102/CO (FADDX1_LVT)                        0.13       4.44 f
+  u_cpu_core/U3101/CO (FADDX1_LVT)                        0.13       4.57 f
+  u_cpu_core/U3099/CO (FADDX1_LVT)                        0.13       4.70 f
+  u_cpu_core/U3098/CO (FADDX1_LVT)                        0.13       4.83 f
+  u_cpu_core/U3097/CO (FADDX1_LVT)                        0.13       4.95 f
+  u_cpu_core/U3096/CO (FADDX1_LVT)                        0.13       5.08 f
+  u_cpu_core/U3129/CO (FADDX1_LVT)                        0.13       5.21 f
+  u_cpu_core/U3130/S (FADDX1_LVT)                         0.15       5.36 f
+  u_cpu_core/U3131/Y (OR3X1_LVT)                          0.14       5.50 f
+  u_cpu_core/U3136/Y (NOR4X1_LVT)                         0.17       5.66 r
+  u_cpu_core/U3137/Y (NAND4X0_LVT)                        0.07       5.73 f
+  u_cpu_core/U3138/Y (OA22X1_LVT)                         0.11       5.85 f
+  u_cpu_core/U461/Y (AND4X1_LVT)                          0.11       5.96 f
+  u_cpu_core/U371/Y (AND4X1_LVT)                          0.12       6.08 f
+  u_cpu_core/U3834/Y (NAND4X0_LVT)                        0.07       6.14 r
+  u_cpu_core/U3835/Y (MUX21X1_LVT)                        0.10       6.25 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_LVT)                   0.00       6.25 r
+  data arrival time                                                  6.25
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_LVT)                 0.00       6.60 r
+  library setup time                                     -0.08       6.52
+  data required time                                                 6.52
+  --------------------------------------------------------------------------
+  data required time                                                 6.52
+  data arrival time                                                 -6.25
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.27
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[2][30]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/S (FADDX1_LVT)                         0.14       5.27 f
+  u_cpu_core/U4214/Y (AO22X1_LVT)                         0.13       5.40 f
+  u_cpu_core/U4217/Y (NOR4X1_LVT)                         0.20       5.60 r
+  u_cpu_core/U4218/Y (AND2X1_LVT)                         0.06       5.66 r
+  u_cpu_core/U4220/Y (AND2X1_LVT)                         0.06       5.72 r
+  u_cpu_core/U4224/Y (NAND4X0_LVT)                        0.21       5.93 f
+  u_cpu_core/U4658/Y (AO22X1_LVT)                         0.25       6.18 f
+  u_cpu_core/R_reg[2][30]/D (DFFARX1_LVT)                 0.00       6.18 f
+  data arrival time                                                  6.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[2][30]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.18
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.31
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[1][30]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/S (FADDX1_LVT)                         0.14       5.27 f
+  u_cpu_core/U4214/Y (AO22X1_LVT)                         0.13       5.40 f
+  u_cpu_core/U4217/Y (NOR4X1_LVT)                         0.20       5.60 r
+  u_cpu_core/U4218/Y (AND2X1_LVT)                         0.06       5.66 r
+  u_cpu_core/U4220/Y (AND2X1_LVT)                         0.06       5.72 r
+  u_cpu_core/U4224/Y (NAND4X0_LVT)                        0.21       5.93 f
+  u_cpu_core/U4692/Y (AO22X1_LVT)                         0.25       6.18 f
+  u_cpu_core/R_reg[1][30]/D (DFFARX1_LVT)                 0.00       6.18 f
+  data arrival time                                                  6.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[1][30]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.18
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.31
+
+
+  Startpoint: u_cpu_core/instruction_reg_reg[12]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/R_reg[0][30]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+  cpu_core_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
+                     35000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/instruction_reg_reg[12]/CLK (DFFARX1_LVT)
+                                                          0.00 #     0.00 r
+  u_cpu_core/instruction_reg_reg[12]/Q (DFFARX1_LVT)      0.22       0.22 f
+  u_cpu_core/U443/Y (AND4X1_LVT)                          0.21       0.43 f
+  u_cpu_core/U319/Y (INVX0_LVT)                           0.07       0.51 r
+  u_cpu_core/U318/Y (INVX0_LVT)                           0.10       0.61 f
+  u_cpu_core/U1086/Y (AO22X1_LVT)                         0.16       0.77 f
+  u_cpu_core/U1089/Y (NOR4X1_LVT)                         0.19       0.95 r
+  u_cpu_core/U1090/Y (NAND2X0_LVT)                        0.04       1.00 f
+  u_cpu_core/U1091/Y (AO22X1_LVT)                         0.13       1.13 f
+  u_cpu_core/U1092/Y (INVX8_LVT)                          0.13       1.26 r
+  u_cpu_core/U195/Y (INVX8_LVT)                           0.07       1.33 f
+  u_cpu_core/U2976/C1 (HADDX1_LVT)                        0.12       1.44 f
+  u_cpu_core/U3069/CO (FADDX1_LVT)                        0.12       1.56 f
+  u_cpu_core/U3068/CO (FADDX1_LVT)                        0.12       1.69 f
+  u_cpu_core/U3067/CO (FADDX1_LVT)                        0.12       1.81 f
+  u_cpu_core/U3066/CO (FADDX1_LVT)                        0.13       1.94 f
+  u_cpu_core/U3074/CO (FADDX1_LVT)                        0.13       2.06 f
+  u_cpu_core/U3073/CO (FADDX1_LVT)                        0.13       2.19 f
+  u_cpu_core/U3072/CO (FADDX1_LVT)                        0.12       2.31 f
+  u_cpu_core/U3071/CO (FADDX1_LVT)                        0.12       2.44 f
+  u_cpu_core/U3059/CO (FADDX1_LVT)                        0.13       2.57 f
+  u_cpu_core/U3058/CO (FADDX1_LVT)                        0.13       2.70 f
+  u_cpu_core/U3057/CO (FADDX1_LVT)                        0.13       2.83 f
+  u_cpu_core/U3056/CO (FADDX1_LVT)                        0.12       2.95 f
+  u_cpu_core/U3064/CO (FADDX1_LVT)                        0.12       3.08 f
+  u_cpu_core/U3063/CO (FADDX1_LVT)                        0.13       3.20 f
+  u_cpu_core/U3062/CO (FADDX1_LVT)                        0.12       3.33 f
+  u_cpu_core/U3061/CO (FADDX1_LVT)                        0.12       3.45 f
+  u_cpu_core/U3092/CO (FADDX1_LVT)                        0.12       3.57 f
+  u_cpu_core/U3091/CO (FADDX1_LVT)                        0.13       3.70 f
+  u_cpu_core/U3090/CO (FADDX1_LVT)                        0.13       3.84 f
+  u_cpu_core/U3089/CO (FADDX1_LVT)                        0.13       3.97 f
+  u_cpu_core/U3085/CO (FADDX1_LVT)                        0.13       4.10 f
+  u_cpu_core/U3084/CO (FADDX1_LVT)                        0.13       4.23 f
+  u_cpu_core/U3083/CO (FADDX1_LVT)                        0.13       4.36 f
+  u_cpu_core/U3082/CO (FADDX1_LVT)                        0.13       4.49 f
+  u_cpu_core/U3080/CO (FADDX1_LVT)                        0.13       4.62 f
+  u_cpu_core/U3079/CO (FADDX1_LVT)                        0.13       4.75 f
+  u_cpu_core/U3078/CO (FADDX1_LVT)                        0.13       4.87 f
+  u_cpu_core/U3077/CO (FADDX1_LVT)                        0.13       5.00 f
+  u_cpu_core/U3088/CO (FADDX1_LVT)                        0.13       5.13 f
+  u_cpu_core/U3087/S (FADDX1_LVT)                         0.14       5.27 f
+  u_cpu_core/U4214/Y (AO22X1_LVT)                         0.13       5.40 f
+  u_cpu_core/U4217/Y (NOR4X1_LVT)                         0.20       5.60 r
+  u_cpu_core/U4218/Y (AND2X1_LVT)                         0.06       5.66 r
+  u_cpu_core/U4220/Y (AND2X1_LVT)                         0.06       5.72 r
+  u_cpu_core/U4224/Y (NAND4X0_LVT)                        0.21       5.93 f
+  u_cpu_core/U4724/Y (AO22X1_LVT)                         0.25       6.18 f
+  u_cpu_core/R_reg[0][30]/D (DFFARX1_LVT)                 0.00       6.18 f
+  data arrival time                                                  6.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/R_reg[0][30]/CLK (DFFARX1_LVT)               0.00       6.60 r
+  library setup time                                     -0.10       6.50
+  data required time                                                 6.50
+  --------------------------------------------------------------------------
+  data required time                                                 6.50
+  data arrival time                                                 -6.18
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.31
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[0]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U774/Y (AO22X1_LVT)                                     0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[0]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[0]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[31]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U773/Y (AO22X1_LVT)                                     0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[31]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[31]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[30]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U772/Y (AO22X1_LVT)                                     0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[30]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[30]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[29]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U1513/Y (AO22X1_LVT)                                    0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[29]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[29]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[28]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U1514/Y (AO22X1_LVT)                                    0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[28]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[28]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[27]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U1515/Y (AO22X1_LVT)                                    0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[27]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[27]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[26]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U1516/Y (AO22X1_LVT)                                    0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[26]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[26]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[25]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U1517/Y (AO22X1_LVT)                                    0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[25]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[25]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[24]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U771/Y (AO22X1_LVT)                                     0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[24]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[24]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[23]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U770/Y (AO22X1_LVT)                                     0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[23]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[23]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[22]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U769/Y (AO22X1_LVT)                                     0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[22]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[22]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[7]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U758/Y (AO22X1_LVT)                                     0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[7]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[7]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[6]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U1522/Y (AO22X1_LVT)                                    0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[6]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[6]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[5]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U1523/Y (AO22X1_LVT)                                    0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[5]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[5]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[4]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U1524/Y (AO22X1_LVT)                                    0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[4]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[4]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[3]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U1525/Y (AO22X1_LVT)                                    0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[3]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[3]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[2]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U1526/Y (AO22X1_LVT)                                    0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[2]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[2]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[1]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U792/Y (INVX0_LVT)                                      0.14       7.60 f
+  U1527/Y (AO22X1_LVT)                                    0.18       7.78 f
+  u_memory_controller/reg_resp_data_reg[1]/D (DFFARX1_LVT)
+                                                          0.00       7.78 f
+  data arrival time                                                  7.78
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[1]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.78
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.27
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/present_state_reg[2]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U793/Y (OAI21X1_LVT)                                    0.14       7.61 f
+  u_memory_controller/present_state_reg[2]/D (DFFARX1_LVT)
+                                                          0.00       7.61 f
+  data arrival time                                                  7.61
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/present_state_reg[2]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.09      14.05
+  data required time                                                14.05
+  --------------------------------------------------------------------------
+  data required time                                                14.05
+  data arrival time                                                 -7.61
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.44
+
+
+  Startpoint: mem_rvalid (input port clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[8]
+            (rising edge-triggered flip-flop clocked by slow_clk)
+  Path Group: slow_clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  input external delay                                    7.14       7.14 f
+  mem_rvalid (in)                                         0.00       7.14 f
+  U776/Y (AND4X1_LVT)                                     0.16       7.30 f
+  U757/Y (INVX2_LVT)                                      0.16       7.46 r
+  U759/Y (AO22X1_LVT)                                     0.10       7.56 r
+  u_memory_controller/reg_resp_data_reg[8]/D (DFFARX1_LVT)
+                                                          0.00       7.56 r
+  data arrival time                                                  7.56
+
+  clock slow_clk (rise edge)                             14.29      14.29
+  clock network delay (ideal)                             0.00      14.29
+  clock uncertainty                                      -0.14      14.14
+  u_memory_controller/reg_resp_data_reg[8]/CLK (DFFARX1_LVT)
+                                                          0.00      14.14 r
+  library setup time                                     -0.08      14.06
+  data required time                                                14.06
+  --------------------------------------------------------------------------
+  data required time                                                14.06
+  data arrival time                                                 -7.56
+  --------------------------------------------------------------------------
+  slack (MET)                                                        6.51
+
+
+1
