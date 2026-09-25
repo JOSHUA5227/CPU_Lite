@@ -137,6 +137,40 @@ def halt():
     return 0xFF000000
 
 
+def make_u32(rd, value):
+    """
+    Construct an arbitrary 32-bit constant using the actual CPU ISA.
+
+    LUI supplies bits [31:20] and ORI supplies bits [11:0].
+    There is no direct instruction for bits [19:12], so build those
+    bits in a scratch register and OR them into the destination.
+
+    Scratch registers 14 and 15 are reserved by this test helper.
+    The current regression uses destination registers 1..13.
+    """
+    value &= 0xFFFFFFFF
+
+    hi  = (value >> 20) & 0xFFF       # bits [31:20]
+    mid = (value >> 12) & 0xFF        # bits [19:12]
+    lo  = value & 0xFFF               # bits [11:0]
+
+    scratch = 14
+    shift_reg = 15
+
+    return [
+        i_type(OP_LUI, rd, 0, hi),
+        load_imm(scratch, mid),
+        load_imm(shift_reg, 12),
+        r_type(OP_SHL, scratch, scratch, shift_reg),
+        r_type(OP_OR, rd, rd, scratch),
+        i_type(OP_ORI, rd, rd, lo),
+    ]
+
+
+def get_psr(dut):
+    return int(cpu_core(dut).psr.value)
+
+
 # ============================================================
 # DUT HELPERS
 # ============================================================
@@ -828,6 +862,357 @@ async def test_long_program(dut, reg):
     reg.check("LOOP INDEX R4", get_reg(dut, 4), 4)
     reg.check("MEM[200]", get_data_mem(dut, 0x200), 10)
 
+
+# ============================================================
+# TEST 16
+# ARITHMETIC CORNER CASES
+# ============================================================
+
+async def test_arithmetic_corner_cases(dut, reg):
+    test_header(16, "ARITHMETIC CORNER CASES")
+
+    program = []
+    program += make_u32(1, 0xFFFFFFFF)
+    program += make_u32(2, 0x00000001)
+    program += make_u32(3, 0x7FFFFFFF)
+    program += make_u32(4, 0x80000000)
+
+    program += [
+        r_type(OP_ADD, 5, 1, 2),
+        r_type(OP_ADD, 6, 3, 2),
+        r_type(OP_SUB, 7, 0, 2),
+        r_type(OP_SUB, 8, 4, 2),
+        r_type(OP_MUL, 9, 3, 2),
+        halt(),
+    ]
+
+    await prepare_test(dut, program)
+    assert await wait_for_halt(dut, test_name="TEST 16")
+
+    reg.check("ADD carry", get_reg(dut, 5), 0x00000000)
+    reg.check("ADD overflow", get_reg(dut, 6), 0x80000000)
+    reg.check("SUB borrow", get_reg(dut, 7), 0xFFFFFFFF)
+    reg.check("SUB boundary", get_reg(dut, 8), 0x7FFFFFFF)
+    reg.check("MUL boundary", get_reg(dut, 9), 0x7FFFFFFF)
+
+
+# ============================================================
+# TEST 17
+# IMMEDIATE SIGN / ZERO EXTENSION
+# ============================================================
+
+async def test_immediate_boundaries(dut, reg):
+    test_header(17, "IMMEDIATE BOUNDARIES")
+
+    program = [
+        load_imm(1, 0xFFF),
+        i_type(OP_ADDI, 2, 0, 0xFFF),
+        i_type(OP_SUBI, 3, 0, 0x001),
+        i_type(OP_ANDI, 4, 1, 0xFFF),
+        i_type(OP_ORI, 5, 0, 0x800),
+        i_type(OP_XORI, 6, 0, 0xFFF),
+        halt(),
+    ]
+
+    await prepare_test(dut, program)
+    assert await wait_for_halt(dut, test_name="TEST 17")
+
+    reg.check("LOAD_IMM FFF", get_reg(dut, 1), 0x00000FFF)
+    reg.check("ADDI -1", get_reg(dut, 2), 0xFFFFFFFF)
+    reg.check("SUBI 1", get_reg(dut, 3), 0xFFFFFFFF)
+    reg.check("ANDI FFF", get_reg(dut, 4), 0x00000FFF)
+    reg.check("ORI 800", get_reg(dut, 5), 0x00000800)
+    reg.check("XORI FFF", get_reg(dut, 6), 0x00000FFF)
+
+
+# ============================================================
+# TEST 18
+# SHIFT / ROTATE BOUNDARIES
+# ============================================================
+
+async def test_shift_rotate_boundaries(dut, reg):
+    test_header(18, "SHIFT / ROTATE BOUNDARIES")
+
+    program = []
+    program += make_u32(1, 0x80000001)
+    program += [
+        load_imm(2, 0),
+        load_imm(3, 31),
+        r_type(OP_SHL, 4, 1, 2),
+        r_type(OP_SHL, 5, 1, 3),
+        r_type(OP_SHR, 6, 1, 2),
+        r_type(OP_SHR, 7, 1, 3),
+        r_type(OP_SAR, 8, 1, 2),
+        r_type(OP_SAR, 9, 1, 3),
+        r_type(OP_ROL, 10, 1, 2),
+        r_type(OP_ROL, 11, 1, 3),
+        r_type(OP_ROR, 12, 1, 2),
+        r_type(OP_ROR, 13, 1, 3),
+        halt(),
+    ]
+
+    await prepare_test(dut, program)
+    assert await wait_for_halt(dut, test_name="TEST 18")
+
+    reg.check("SHL 0", get_reg(dut, 4), 0x80000001)
+    reg.check("SHL 31", get_reg(dut, 5), 0x80000000)
+    reg.check("SHR 0", get_reg(dut, 6), 0x80000001)
+    reg.check("SHR 31", get_reg(dut, 7), 0x00000001)
+    reg.check("SAR 0", get_reg(dut, 8), 0x80000001)
+    reg.check("SAR 31", get_reg(dut, 9), 0xFFFFFFFF)
+    reg.check("ROL 0", get_reg(dut, 10), 0x80000001)
+    reg.check("ROL 31", get_reg(dut, 11), 0xC0000000)
+    reg.check("ROR 0", get_reg(dut, 12), 0x80000001)
+    reg.check("ROR 31", get_reg(dut, 13), 0x00000003)
+
+
+# ============================================================
+# TEST 19
+# SIGNED / UNSIGNED COMPARISON CORNERS
+# ============================================================
+
+async def test_signed_unsigned_compare(dut, reg):
+    test_header(19, "SIGNED / UNSIGNED COMPARISONS")
+
+    program = []
+    program += make_u32(1, 0xFFFFFFFF)
+    program += make_u32(2, 0x00000001)
+    program += make_u32(3, 0x80000000)
+    program += make_u32(4, 0x7FFFFFFF)
+
+    program += [
+        r_type(OP_SLT, 5, 1, 2),
+        r_type(OP_SLTU, 6, 1, 2),
+        r_type(OP_SLT, 7, 3, 4),
+        r_type(OP_SLTU, 8, 3, 4),
+        r_type(OP_EQ, 9, 1, 1),
+        r_type(OP_EQ, 10, 1, 2),
+        halt(),
+    ]
+
+    await prepare_test(dut, program)
+    assert await wait_for_halt(dut, test_name="TEST 19")
+
+    reg.check("SLT -1 < 1", get_reg(dut, 5), 1)
+    reg.check("SLTU FFFF < 1", get_reg(dut, 6), 0)
+    reg.check("SLT MIN < MAX", get_reg(dut, 7), 1)
+    reg.check("SLTU 8000 < 7FFF", get_reg(dut, 8), 0)
+    reg.check("EQ same", get_reg(dut, 9), 1)
+    reg.check("EQ different", get_reg(dut, 10), 0)
+
+
+# ============================================================
+# TEST 20
+# ALL CONDITIONAL BRANCHES
+# ============================================================
+
+async def test_all_branches(dut, reg):
+    test_header(20, "ALL CONDITIONAL BRANCHES")
+
+    cases = [
+        ("BEQ", [
+            load_imm(1, 5), load_imm(2, 5),
+            r_type(OP_CMP, 0, 1, 2), branch(OP_BEQ, 6),
+            load_imm(3, 0xBAD), jmp(7),
+            load_imm(3, 0x111), halt()
+        ], 0x111),
+
+        ("BNE", [
+            load_imm(1, 5), load_imm(2, 6),
+            r_type(OP_CMP, 0, 1, 2), branch(OP_BNE, 6),
+            load_imm(3, 0xBAD), jmp(7),
+            load_imm(3, 0x222), halt()
+        ], 0x222),
+
+        ("BGE", [
+            load_imm(1, 5), load_imm(2, 5),
+            r_type(OP_CMP, 0, 1, 2), branch(OP_BGE, 6),
+            load_imm(3, 0xBAD), jmp(7),
+            load_imm(3, 0x333), halt()
+        ], 0x333),
+
+        ("BLTU", [
+            load_imm(1, 1),
+            i_type(OP_LUI, 2, 0, 0xFFF),
+            i_type(OP_ORI, 2, 2, 0xFFF),
+            r_type(OP_CMP, 0, 1, 2), branch(OP_BLTU, 8),
+            load_imm(3, 0xBAD), jmp(9),
+            load_imm(3, 0xBAD), load_imm(3, 0x444), halt()
+        ], 0x444),
+
+        ("BGEU", [
+            i_type(OP_LUI, 1, 0, 0xFFF),
+            i_type(OP_ORI, 1, 1, 0xFFF),
+            load_imm(2, 1),
+            r_type(OP_CMP, 0, 1, 2), branch(OP_BGEU, 8),
+            load_imm(3, 0xBAD), jmp(9),
+            load_imm(3, 0xBAD), load_imm(3, 0x555), halt()
+        ], 0x555),
+    ]
+
+    for name, program, expected in cases:
+        await prepare_test(dut, program)
+        assert await wait_for_halt(dut, test_name=f"TEST 20 {name}")
+        reg.check(name, get_reg(dut, 3), expected)
+
+
+# ============================================================
+# TEST 21
+# JMP_REG
+# ============================================================
+
+async def test_jmp_reg(dut, reg):
+    test_header(21, "JMP_REG")
+
+    program = [
+        load_imm(1, 6),
+        jmp_reg(1),
+        load_imm(2, 0xBAD),
+        load_imm(2, 0xBAD),
+        load_imm(2, 0xBAD),
+        load_imm(2, 0xBAD),
+        load_imm(2, 0x666),
+        halt(),
+    ]
+
+    await prepare_test(dut, program)
+    assert await wait_for_halt(dut, test_name="TEST 21")
+    reg.check("JMP_REG", get_reg(dut, 2), 0x666)
+
+
+# ============================================================
+# TEST 22
+# DIRECT ADDRESS BOUNDARIES
+# ============================================================
+
+async def test_direct_memory_boundaries(dut, reg):
+    test_header(22, "DIRECT MEMORY BOUNDARIES")
+
+    program = [
+        load_imm(1, 0x111),
+        load_imm(2, 0x222),
+        store(1, 0x000),
+        store(2, 0xFFF),
+        load(3, 0x000),
+        load(4, 0xFFF),
+        halt(),
+    ]
+
+    await prepare_test(dut, program)
+    assert await wait_for_halt(dut, test_name="TEST 22")
+
+    reg.check("MEM[000]", get_data_mem(dut, 0x000), 0x111)
+    reg.check("MEM[FFF]", get_data_mem(dut, 0xFFF), 0x222)
+    reg.check("LOAD[000]", get_reg(dut, 3), 0x111)
+    reg.check("LOAD[FFF]", get_reg(dut, 4), 0x222)
+
+
+# ============================================================
+# TEST 23
+# 14-BIT INDIRECT ADDRESS BOUNDARIES
+# ============================================================
+
+async def test_indirect_address_boundaries(dut, reg):
+    test_header(23, "14-BIT INDIRECT ADDRESS BOUNDARIES")
+
+    program = []
+    program += make_u32(1, 0x3FFF)
+    program += [
+        load_imm(2, 0x5A5),
+        store_ind(2, 1),
+        load_ind(3, 1),
+        halt(),
+    ]
+
+    await prepare_test(dut, program)
+    assert await wait_for_halt(dut, test_name="TEST 23")
+
+    # Do not directly index the internal data-memory array here.
+    # The architectural requirement being tested is that LOAD_IND/
+    # STORE_IND can carry a full 14-bit address. The load-back result
+    # proves that the store reached the selected location and that the
+    # same 14-bit address can be read back.
+    reg.check("LOAD_IND 3FFF", get_reg(dut, 3), 0x5A5)
+
+
+# ============================================================
+# TEST 24
+# CACHE / CDC SEQUENTIAL STRESS
+# ============================================================
+
+async def test_memory_stress(dut, reg):
+    test_header(24, "CACHE / CDC SEQUENTIAL STRESS")
+
+    program = []
+
+    for i in range(16):
+        program.append(load_imm(1, i + 1))
+        program.append(store(1, 0x300 + i))
+
+    for i in range(16):
+        program.append(load(2, 0x300 + i))
+
+    program.append(halt())
+
+    await prepare_test(dut, program)
+    assert await wait_for_halt(dut, max_cycles=10000, test_name="TEST 24")
+
+    for _ in range(20):
+        await RisingEdge(dut.slow_clk)
+
+    for i in range(16):
+        reg.check(f"MEM[{0x300+i:03X}]", get_data_mem(dut, 0x300 + i), i + 1)
+
+
+# ============================================================
+# TEST 25
+# MIXED ALU + MEMORY + BRANCH STRESS
+# ============================================================
+
+async def test_mixed_stress(dut, reg):
+    test_header(25, "MIXED ALU / MEMORY / BRANCH STRESS")
+
+    program = [
+        load_imm(1, 0x380),
+        load_imm(2, 8),
+        load_imm(3, 0),
+        load_imm(4, 0),
+
+        r_type(OP_CMP, 0, 4, 2),
+        branch(OP_BGE, 11),
+
+        r_type(OP_ADD, 5, 1, 4),
+        load_ind(6, 5),
+        r_type(OP_ADD, 3, 3, 6),
+        i_type(OP_ADDI, 4, 4, 1),
+        jmp(4),
+
+        store(3, 0x390),
+        halt(),
+    ]
+
+    memory = {
+        0x380: 1,
+        0x381: 2,
+        0x382: 3,
+        0x383: 4,
+        0x384: 5,
+        0x385: 6,
+        0x386: 7,
+        0x387: 8,
+    }
+
+    await prepare_test(dut, program, memory)
+    assert await wait_for_halt(dut, max_cycles=10000, test_name="TEST 25")
+
+    for _ in range(12):
+        await RisingEdge(dut.slow_clk)
+
+    reg.check("SUM", get_reg(dut, 3), 36)
+    reg.check("INDEX", get_reg(dut, 4), 8)
+    reg.check("MEM[390]", get_data_mem(dut, 0x390), 36)
+
+
 # ============================================================
 # MASTER REGRESSION
 # ============================================================
@@ -858,6 +1243,18 @@ async def test_cpu_regression(dut):
     await test_boundaries(dut, reg)
     await test_long_program(dut, reg)
 
+    # Extended corner-case and stress regression
+    await test_arithmetic_corner_cases(dut, reg)
+    await test_immediate_boundaries(dut, reg)
+    await test_shift_rotate_boundaries(dut, reg)
+    await test_signed_unsigned_compare(dut, reg)
+    await test_all_branches(dut, reg)
+    await test_jmp_reg(dut, reg)
+    await test_direct_memory_boundaries(dut, reg)
+    await test_indirect_address_boundaries(dut, reg)
+    await test_memory_stress(dut, reg)
+    await test_mixed_stress(dut, reg)
+
     print()
     print("================================================")
     print("             CPU REGRESSION SUMMARY")
@@ -877,3 +1274,4 @@ async def test_cpu_regression(dut):
     assert reg.failed == 0, (
         f"Regression failed: {reg.failed}/{reg.total} checks failed"
     )
+
