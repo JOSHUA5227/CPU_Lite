@@ -1,0 +1,5 @@
+current_design "cpu_interface" 
+clock -name fast_clk -domain d1 -period 6.6667 -tag CLOCK_DOMAIN_1 -edge {0 3.3333} 
+clock -name slow_clk -domain d2 -period 14.2857 -tag CLOCK_DOMAIN_2 -edge {0 7.14285} 
+reset -name fast_rst_n -value 0 
+reset -name slow_rst_n -value 0 
