@@ -1,2382 +1,1272 @@
 `timescale 1ns/1ps
 
-module cpu_core_tb;
+// ============================================================================
+// CPU LITE - HARDER SELF-CHECKING TESTBENCH
+//
+// Assumes the DUT modules/interfaces from the original testbench:
+//
+//   cache
+//   async_fifo
+//   memory_controller
+//   data_memory
+//
+// Cache policy being verified:
+//   - direct mapped
+//   - 8 lines
+//   - 4 words/line
+//   - write-back
+//   - no-write-allocate
+//
+// Main improvements over the original TB:
+//   1. Independent architectural reference memory.
+//   2. Randomized read/write traffic.
+//   3. Deliberate same-index/different-tag collisions.
+//   4. Backing-memory write scoreboard.
+//   5. FIFO protocol safety checks.
+//   6. CPU request/completion accounting.
+//   7. Randomized transaction ordering.
+//   8. Directed dirty-eviction stress.
+//   9. Boundary-address stress.
+//  10. Final backing-memory comparison against the reference model.
+// ============================================================================
 
-    // ============================================================
-    // PARAMETERS - MATCH DUT
-    // ============================================================
+module test;
 
-    parameter PROG_ADDR_WIDTH = 12;
-    parameter DATA_ADDR_WIDTH = 14;
-    parameter DATA_WIDTH      = 32;
+parameter ADDR_WIDTH  = 14;
+parameter DATA_WIDTH  = 32;
+parameter CACHE_LINES = 8;
+parameter WORDS_PER   = 4;
+parameter FIFO_DEPTH  = 8;
 
-    // ============================================================
-    // CLOCK / RESET
-    // ============================================================
+localparam MEM_WORDS = (1 << ADDR_WIDTH);
+localparam LINE_WORDS = WORDS_PER;
+localparam INDEX_BITS = 3;       // log2(8)
+localparam OFFSET_BITS = 2;      // log2(4)
 
-    reg clk;
-    reg rst_n;
 
-    initial begin
-        clk = 1'b0;
-        forever #5 clk = ~clk;
+// ============================================================================
+// CLOCKS
+// ============================================================================
+
+reg clk_150;
+reg clk_70;
+
+initial begin
+    clk_150 = 1'b0;
+    forever #3.333 clk_150 = ~clk_150;
+end
+
+initial begin
+    clk_70 = 1'b0;
+    forever #7.143 clk_70 = ~clk_70;
+end
+
+
+// ============================================================================
+// RESET
+// ============================================================================
+
+reg rst_n;
+
+initial begin
+    rst_n = 1'b0;
+
+    repeat(5)
+        @(posedge clk_150);
+
+    rst_n = 1'b1;
+end
+
+
+// ============================================================================
+// CPU SIDE
+// ============================================================================
+
+reg                     cpu_req;
+reg                     read_write;
+reg [ADDR_WIDTH-1:0]    addr;
+reg [DATA_WIDTH-1:0]    wdata;
+
+wire [DATA_WIDTH-1:0]   rdata;
+wire                    cpu_ready;
+
+
+// ============================================================================
+// CACHE <-> REQUEST FIFO
+// ============================================================================
+
+wire [ADDR_WIDTH+DATA_WIDTH:0] cache_req_data;
+wire                            cache_req_en;
+wire                            req_fifo_full;
+
+
+// ============================================================================
+// REQUEST FIFO <-> CONTROLLER
+// ============================================================================
+
+wire [ADDR_WIDTH+DATA_WIDTH:0] req_fifo_rdata;
+wire                            req_fifo_empty;
+wire                            req_fifo_r_en;
+
+
+// ============================================================================
+// CACHE <-> RESPONSE FIFO
+// ============================================================================
+
+wire [DATA_WIDTH-1:0] response_fifo_rdata;
+wire                  response_fifo_empty;
+wire                  response_fifo_r_en;
+
+
+// ============================================================================
+// CONTROLLER <-> RESPONSE FIFO
+// ============================================================================
+
+wire [DATA_WIDTH-1:0] response_fifo_wdata;
+wire                  response_fifo_w_en;
+wire                  response_fifo_full;
+
+
+// ============================================================================
+// CONTROLLER <-> MEMORY
+// ============================================================================
+
+wire [ADDR_WIDTH-1:0] mem_addr;
+wire [DATA_WIDTH-1:0] mem_wdata;
+
+wire mem_read_en;
+wire mem_write_en;
+
+wire [DATA_WIDTH-1:0] mem_rdata;
+wire                  mem_rvalid;
+
+
+// ============================================================================
+// DUT
+// ============================================================================
+
+cache #(
+    .ADDR_WIDTH(ADDR_WIDTH),
+    .DATA_WIDTH(DATA_WIDTH),
+    .CACHE_LINES(CACHE_LINES),
+    .WORDS_PER(WORDS_PER)
+) dut (
+    .clk(clk_150),
+    .rst_n(rst_n),
+
+    .cpu_req(cpu_req),
+    .read_write(read_write),
+    .addr(addr),
+    .wdata(wdata),
+
+    .rdata(rdata),
+    .cpu_ready(cpu_ready),
+
+    .fifo_req_full(req_fifo_full),
+    .fifo_req_data(cache_req_data),
+    .fifo_req_en(cache_req_en),
+
+    .fifo_resp_en(response_fifo_r_en),
+    .fifo_resp_data(response_fifo_rdata),
+    .fifo_resp_empty(response_fifo_empty)
+);
+
+
+async_fifo #(
+    .WIDTH(ADDR_WIDTH + DATA_WIDTH + 1),
+    .DEPTH(FIFO_DEPTH)
+) request_fifo (
+    .rclk(clk_70),
+    .wclk(clk_150),
+
+    .w_rst_n(rst_n),
+    .r_rst_n(rst_n),
+
+    .r_data(req_fifo_rdata),
+    .w_data(cache_req_data),
+
+    .r_en(req_fifo_r_en),
+    .w_en(cache_req_en),
+
+    .full(req_fifo_full),
+    .empty(req_fifo_empty)
+);
+
+
+async_fifo #(
+    .WIDTH(DATA_WIDTH),
+    .DEPTH(FIFO_DEPTH)
+) response_fifo (
+    .rclk(clk_150),
+    .wclk(clk_70),
+
+    .w_rst_n(rst_n),
+    .r_rst_n(rst_n),
+
+    .r_data(response_fifo_rdata),
+    .w_data(response_fifo_wdata),
+
+    .r_en(response_fifo_r_en),
+    .w_en(response_fifo_w_en),
+
+    .full(response_fifo_full),
+    .empty(response_fifo_empty)
+);
+
+
+memory_controller #(
+    .ADDR_WIDTH(ADDR_WIDTH),
+    .DATA_WIDTH(DATA_WIDTH)
+) controller (
+    .clk(clk_70),
+    .rst_n(rst_n),
+
+    .req_data(req_fifo_rdata),
+    .req_empty(req_fifo_empty),
+    .req_en(req_fifo_r_en),
+
+    .resp_data(response_fifo_wdata),
+    .resp_en(response_fifo_w_en),
+    .resp_full(response_fifo_full),
+
+    .mem_addr(mem_addr),
+    .mem_wdata(mem_wdata),
+
+    .mem_read_en(mem_read_en),
+    .mem_write_en(mem_write_en),
+
+    .mem_rdata(mem_rdata),
+    .mem_rvalid(mem_rvalid)
+);
+
+
+data_memory #(
+    .ADDR_WIDTH(ADDR_WIDTH),
+    .DATA_WIDTH(DATA_WIDTH)
+) memory (
+    .clk(clk_70),
+    .rst_n(rst_n),
+
+    .read_en(mem_read_en),
+    .write_en(mem_write_en),
+
+    .addr(mem_addr),
+    .wdata(mem_wdata),
+
+    .rdata(mem_rdata),
+    .rvalid(mem_rvalid)
+);
+
+
+// ============================================================================
+// TEST / SCOREBOARD STATE
+// ============================================================================
+
+integer total_checks;
+integer passed_checks;
+integer failed_checks;
+
+integer cpu_read_count;
+integer cpu_write_count;
+integer cpu_completion_count;
+
+integer memory_read_count;
+integer memory_write_count;
+
+integer protocol_violations;
+integer scoreboard_violations;
+
+reg [DATA_WIDTH-1:0] ref_mem [0:MEM_WORDS-1];
+
+reg monitor_enabled;
+
+
+// ============================================================================
+// CHECK TASK
+// ============================================================================
+
+task check;
+    input condition;
+    input [8*140-1:0] message;
+
+    begin
+        total_checks = total_checks + 1;
+
+        if(condition) begin
+            passed_checks = passed_checks + 1;
+            $display("[PASS] %s", message);
+        end
+        else begin
+            failed_checks = failed_checks + 1;
+            $display("[FAIL] %s", message);
+        end
     end
+endtask
 
-    // ============================================================
-    // CPU PORTS
-    // ============================================================
 
-    wire [DATA_WIDTH-1:0] instruction;
-    wire [PROG_ADDR_WIDTH-1:0] pc;
+// ============================================================================
+// INITIALIZE REFERENCE MODEL + REAL MEMORY
+// ============================================================================
 
-    wire [DATA_WIDTH-1:0] rdata;
-    wire cpu_ready;
+task initialize_memory;
+    integer i;
 
-    wire cpu_req;
-    wire read_write;
-    wire [DATA_ADDR_WIDTH-1:0] addr;
-    wire [DATA_WIDTH-1:0] wdata;
-
-    // ============================================================
-    // DUT
-    // ============================================================
-
-    cpu_core #(
-        .PROG_ADDR_WIDTH(PROG_ADDR_WIDTH),
-        .DATA_ADDR_WIDTH(DATA_ADDR_WIDTH),
-        .DATA_WIDTH(DATA_WIDTH)
-    ) dut (
-        .clk         (clk),
-        .rst_n       (rst_n),
-
-        .instruction (instruction),
-        .pc          (pc),
-
-        .rdata       (rdata),
-        .cpu_ready   (cpu_ready),
-
-        .cpu_req     (cpu_req),
-        .read_write  (read_write),
-        .addr        (addr),
-        .wdata       (wdata)
-    );
-
-    // ============================================================
-    // PROGRAM MEMORY
-    // ============================================================
-
-    reg [DATA_WIDTH-1:0] program_memory [0:4095];
-
-    assign instruction = program_memory[pc];
-
-    // ============================================================
-    // DATA MEMORY
-    // ============================================================
-
-    reg [DATA_WIDTH-1:0] data_memory [0:16383];
-
-    /*
-     * Registered response.
-     *
-     * This intentionally behaves more like a real memory/cache
-     * interface than:
-     *
-     *     assign rdata = data_memory[addr];
-     *
-     * The CPU must receive a stable rdata when cpu_ready is asserted.
-     */
-
-    reg [DATA_WIDTH-1:0] rdata_reg;
-    reg                  cpu_ready_reg;
-
-    assign rdata     = rdata_reg;
-    assign cpu_ready = cpu_ready_reg;
-
-    always @(posedge clk) begin
-
-        cpu_ready_reg <= 1'b0;
-
-        if (cpu_req) begin
-
-            if (read_write) begin
-
-                // STORE
-                data_memory[addr] <= wdata;
-                cpu_ready_reg     <= 1'b1;
-
-            end
-            else begin
-
-                // LOAD
-                rdata_reg         <= data_memory[addr];
-                cpu_ready_reg     <= 1'b1;
-
-            end
-
+    begin
+        for(i = 0; i < MEM_WORDS; i = i + 1) begin
+            ref_mem[i] = 32'h00000000;
+            memory.mem[i] = 32'h00000000;
         end
-
     end
-
-    // ============================================================
-    // OPCODES - MATCH DUT EXACTLY
-    // ============================================================
-
-    localparam [7:0] NOP       = 8'h00;
-    localparam [7:0] LOAD      = 8'h01;
-    localparam [7:0] LOAD_IND  = 8'h02;
-    localparam [7:0] LOAD_IMM  = 8'h03;
-    localparam [7:0] STORE     = 8'h04;
-    localparam [7:0] STORE_IND = 8'h05;
-
-    localparam [7:0] ADD       = 8'h06;
-    localparam [7:0] SUB       = 8'h07;
-    localparam [7:0] MUL       = 8'h08;
-    localparam [7:0] AND_OP    = 8'h09;
-    localparam [7:0] OR_OP     = 8'h0A;
-    localparam [7:0] NOT_OP    = 8'h0B;
-    localparam [7:0] CMP       = 8'h0C;
-    localparam [7:0] EQ        = 8'h0D;
-
-    localparam [7:0] JMP       = 8'h0E;
-    localparam [7:0] JMP_IF    = 8'h0F;
-
-    localparam [7:0] XOR_OP    = 8'h10;
-    localparam [7:0] SHL       = 8'h11;
-    localparam [7:0] SHR       = 8'h12;
-    localparam [7:0] SAR       = 8'h13;
-    localparam [7:0] ROL       = 8'h14;
-    localparam [7:0] ROR       = 8'h15;
-
-    localparam [7:0] ADDI      = 8'h16;
-    localparam [7:0] SUBI      = 8'h17;
-    localparam [7:0] ANDI      = 8'h18;
-    localparam [7:0] ORI       = 8'h19;
-    localparam [7:0] XORI      = 8'h1A;
-    localparam [7:0] MOV       = 8'h1B;
-    localparam [7:0] SLT       = 8'h1C;
-    localparam [7:0] SLTU      = 8'h1D;
-    localparam [7:0] LUI       = 8'h1E;
-
-    localparam [7:0] BEQ       = 8'h20;
-    localparam [7:0] BNE       = 8'h21;
-    localparam [7:0] BLT       = 8'h22;
-    localparam [7:0] BGE       = 8'h23;
-    localparam [7:0] BLTU      = 8'h24;
-    localparam [7:0] BGEU      = 8'h25;
-    localparam [7:0] JMP_REG   = 8'h26;
-
-    localparam [7:0] CALL      = 8'h27;
-    localparam [7:0] RET       = 8'h28;
-
-    localparam [7:0] HALT      = 8'hFF;
-
-    // ============================================================
-    // FSM STATE VALUES - MATCH DUT
-    // ============================================================
-
-    localparam [2:0] RESET_STATE       = 3'd0;
-    localparam [2:0] FETCH_STATE       = 3'd1;
-    localparam [2:0] DECODE_STATE      = 3'd2;
-    localparam [2:0] EXECUTE_STATE     = 3'd3;
-    localparam [2:0] EXECUTE_WAIT_STATE= 3'd4;
-    localparam [2:0] MEMORY_STATE      = 3'd5;
-    localparam [2:0] WRITEBACK_STATE   = 3'd6;
-    localparam [2:0] HLT_STATE         = 3'd7;
-
-    // ============================================================
-    // TEST COUNTERS
-    // ============================================================
-
-    integer passed;
-    integer failed;
-
-    // ============================================================
-    // INSTRUCTION ENCODERS
-    // ============================================================
-
-    /*
-     * Register format:
-     *
-     * [31:24] opcode
-     * [23:20] rd
-     * [19:16] rs1
-     * [15:12] rs2
-     * [11:0]  zero
-     */
-
-    function [31:0] ENC_R;
-        input [7:0] opcode_in;
-        input [3:0] rd_in;
-        input [3:0] rs1_in;
-        input [3:0] rs2_in;
-
-        begin
-            ENC_R = {
-                opcode_in,
-                rd_in,
-                rs1_in,
-                rs2_in,
-                12'b0
-            };
-        end
-    endfunction
-
-    /*
-     * Immediate format:
-     *
-     * [31:24] opcode
-     * [23:20] rd
-     * [19:16] rs1
-     * [15:12] unused
-     * [11:0]  immediate
-     */
-
-    function [31:0] ENC_I;
-        input [7:0] opcode_in;
-        input [3:0] rd_in;
-        input [3:0] rs1_in;
-        input [11:0] imm_in;
-
-        begin
-            ENC_I = {
-                opcode_in,
-                rd_in,
-                rs1_in,
-                4'b0,
-                imm_in
-            };
-        end
-    endfunction
-
-    /*
-     * Jump/branch format:
-     *
-     * [31:24] opcode
-     * [23:20] zero
-     * [19:16] zero
-     * [15:12] zero
-     * [11:0]  target
-     */
-
-    function [31:0] ENC_J;
-        input [7:0] opcode_in;
-        input [11:0] target_in;
-
-        begin
-            ENC_J = {
-                opcode_in,
-                4'b0,
-                4'b0,
-                4'b0,
-                target_in
-            };
-        end
-    endfunction
-
-    // ============================================================
-    // UTILITY TASKS
-    // ============================================================
-
-    task clear_program;
-
-        integer i;
-
-        begin
-            for (i = 0; i < 4096; i = i + 1)
-                program_memory[i] = {NOP,24'b0};
-        end
-
-    endtask
-
-
-    task clear_data_memory;
-
-        integer i;
-
-        begin
-            for (i = 0; i < 16384; i = i + 1)
-                data_memory[i] = 32'b0;
-        end
-
-    endtask
-
-
-    task reset_cpu;
-
-        begin
-
-            rst_n = 1'b0;
-
-            repeat (3)
-                @(posedge clk);
-
-            rst_n = 1'b1;
-
-            repeat (2)
-                @(posedge clk);
-
-        end
-
-    endtask
-
-
-    /*
-     * Wait for HLT.
-     *
-     * Your DUT explicitly defines:
-     *
-     * HLT = 3'd7
-     */
-
-    task wait_for_halt;
-
-        integer timeout;
-
-        begin
-
-            timeout = 0;
-
-            while ((dut.present_state !== HLT_STATE) &&
-                   (timeout < 500)) begin
-
-                @(posedge clk);
-
-                timeout = timeout + 1;
-
-            end
-
-            if (timeout >= 500) begin
-
-                $display("ERROR: CPU TIMEOUT waiting for HLT");
-                failed = failed + 1;
-
-            end
-            else begin
-
-                $display("CPU reached HLT state.");
-
-            end
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // CHECK REGISTER
-    // ============================================================
-
-    task check_reg;
-
-        input integer reg_num;
-        input [31:0] expected;
-
-        begin
-
-            if (dut.R[reg_num] === expected) begin
-
-                $display(
-                    "PASS: R%0d = 0x%08h",
-                    reg_num,
-                    dut.R[reg_num]
-                );
-
-                passed = passed + 1;
-
-            end
-            else begin
-
-                $display(
-                    "FAIL: R%0d expected 0x%08h, got 0x%08h",
-                    reg_num,
-                    expected,
-                    dut.R[reg_num]
-                );
-
-                failed = failed + 1;
-
-            end
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // CHECK MEMORY
-    // ============================================================
-
-    task check_memory;
-
-        input integer address;
-        input [31:0] expected;
-
-        begin
-
-            if (data_memory[address] === expected) begin
-
-                $display(
-                    "PASS: MEM[0x%04h] = 0x%08h",
-                    address,
-                    data_memory[address]
-                );
-
-                passed = passed + 1;
-
-            end
-            else begin
-
-                $display(
-                    "FAIL: MEM[0x%04h] expected 0x%08h, got 0x%08h",
-                    address,
-                    expected,
-                    data_memory[address]
-                );
-
-                failed = failed + 1;
-
-            end
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // CHECK PSR
-    // ============================================================
-
-    task check_psr;
-
-        input [3:0] expected;
-
-        begin
-
-            if (dut.psr === expected) begin
-
-                $display(
-                    "PASS: PSR = %04b",
-                    dut.psr
-                );
-
-                passed = passed + 1;
-
-            end
-            else begin
-
-                $display(
-                    "FAIL: PSR expected %04b, got %04b",
-                    expected,
-                    dut.psr
-                );
-
-                failed = failed + 1;
-
-            end
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 1
-    // LOAD_IMM + MOV
-    // ============================================================
-
-    task test_load_imm_mov;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 1: LOAD_IMM / MOV");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h123);
-
-            program_memory[1] =
-                ENC_I(MOV,2,1,12'h000);
-
-            program_memory[2] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(1,32'h00000123);
-            check_reg(2,32'h00000123);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 2
-    // ARITHMETIC
-    // ============================================================
-
-    task test_arithmetic;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 2: ARITHMETIC");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'd10);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'd3);
-
-            program_memory[2] =
-                ENC_R(ADD,3,1,2);
-
-            program_memory[3] =
-                ENC_R(SUB,4,1,2);
-
-            program_memory[4] =
-                ENC_R(MUL,5,1,2);
-
-            program_memory[5] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'd13);
-            check_reg(4,32'd7);
-            check_reg(5,32'd30);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 3
-    // LOGICAL OPERATIONS
-    // ============================================================
-
-    task test_logical;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 3: LOGICAL OPERATIONS");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'hAAA);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h555);
-
-            program_memory[2] =
-                ENC_R(AND_OP,3,1,2);
-
-            program_memory[3] =
-                ENC_R(OR_OP,4,1,2);
-
-            program_memory[4] =
-                ENC_R(XOR_OP,5,1,2);
-
-            program_memory[5] =
-                ENC_R(NOT_OP,6,1,0);
-
-            program_memory[6] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000000);
-            check_reg(4,32'h00000FFF);
-            check_reg(5,32'h00000FFF);
-            check_reg(6,32'hFFFFF555);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 4
-    // SHIFTS
-    // ============================================================
-
-    task test_shifts;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 4: SHIFTS");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h008);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h001);
-
-            program_memory[2] =
-                ENC_R(SHL,3,1,2);
-
-            program_memory[3] =
-                ENC_R(SHR,4,1,2);
-
-            program_memory[4] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000010);
-            check_reg(4,32'h00000004);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 5
-    // STORE / LOAD
-    // ============================================================
-
-    task test_load_store;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 5: LOAD / STORE");
-            $display("============================================");
-
-            clear_program;
-            clear_data_memory;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h555);
-
-            program_memory[1] =
-                ENC_I(STORE,1,0,12'h100);
-
-            program_memory[2] =
-                ENC_I(LOAD,2,0,12'h100);
-
-            program_memory[3] =
-                ENC_I(MOV,4,2,12'h000);
-
-            program_memory[4] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_memory(12'h100,32'h00000555);
-            check_reg(2,32'h00000555);
-            check_reg(4,32'h00000555);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 6
-    // CMP + BEQ
-    // ============================================================
-
-    task test_cmp_beq;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 6: CMP + BEQ");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h005);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h005);
-
-            program_memory[2] =
-                ENC_R(CMP,0,1,2);
-
-            program_memory[3] =
-                ENC_J(BEQ,12'h006);
-
-            program_memory[4] =
-                ENC_I(LOAD_IMM,3,0,12'h111);
-
-            program_memory[5] =
-                ENC_J(JMP,12'h007);
-
-            program_memory[6] =
-                ENC_I(LOAD_IMM,3,0,12'h222);
-
-            program_memory[7] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000222);
-            check_psr(4'b0101);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 7
-    // BNE
-    // ============================================================
-
-    task test_bne;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 7: BNE");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h005);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h006);
-
-            program_memory[2] =
-                ENC_R(CMP,0,1,2);
-
-            program_memory[3] =
-                ENC_J(BNE,12'h006);
-
-            program_memory[4] =
-                ENC_I(LOAD_IMM,3,0,12'h111);
-
-            program_memory[5] =
-                ENC_J(JMP,12'h007);
-
-            program_memory[6] =
-                ENC_I(LOAD_IMM,3,0,12'h222);
-
-            program_memory[7] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000222);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 8
-    // JMP
-    // ============================================================
-
-    task test_jmp;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 8: JMP");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_J(JMP,12'h004);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,1,0,12'h111);
-
-            program_memory[2] =
-                ENC_I(LOAD_IMM,1,0,12'h111);
-
-            program_memory[3] =
-                ENC_I(LOAD_IMM,1,0,12'h111);
-
-            program_memory[4] =
-                ENC_I(LOAD_IMM,1,0,12'h222);
-
-            program_memory[5] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(1,32'h00000222);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 9
-    // JMP_IF
-    // ============================================================
-
-    task test_jmp_if;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 9: JMP_IF");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h001);
-
-            program_memory[1] =
-                ENC_I(JMP_IF,0,1,12'h004);
-
-            program_memory[2] =
-                ENC_I(LOAD_IMM,2,0,12'h111);
-
-            program_memory[3] =
-                ENC_J(JMP,12'h005);
-
-            program_memory[4] =
-                ENC_I(LOAD_IMM,2,0,12'h222);
-
-            program_memory[5] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(2,32'h00000222);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 10
-    // EQ / SLT / SLTU
-    // ============================================================
-
-    task test_comparisons;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 10: EQ / SLT / SLTU");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h001);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h002);
-
-            program_memory[2] =
-                ENC_R(EQ,3,1,1);
-
-            program_memory[3] =
-                ENC_R(SLT,5,1,2);
-
-            program_memory[4] =
-                ENC_R(SLTU,6,1,2);
-
-            program_memory[5] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000001);
-            check_reg(5,32'h00000001);
-            check_reg(6,32'h00000001);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 11
-    // LUI
-    // ============================================================
-
-    task test_lui;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 11: LUI");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LUI,1,0,12'h123);
-
-            program_memory[1] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(1,32'h12300000);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 12
-    // HALT
-    // ============================================================
-
-    task test_halt;
-
-        reg [PROG_ADDR_WIDTH-1:0] saved_pc;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 12: HALT");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            saved_pc = pc;
-
-            repeat (10)
-                @(posedge clk);
-
-            if (pc === saved_pc) begin
-
-                $display("PASS: PC remains unchanged in HLT");
-                passed = passed + 1;
-
-            end
-            else begin
-
-                $display(
-                    "FAIL: PC changed in HLT: 0x%03h -> 0x%03h",
-                    saved_pc,
-                    pc
-                );
-
-                failed = failed + 1;
-
-            end
-
-            if (dut.present_state === HLT_STATE) begin
-
-                $display("PASS: CPU remains in HLT");
-                passed = passed + 1;
-
-            end
-            else begin
-
-                $display("FAIL: CPU left HLT state");
-                failed = failed + 1;
-
-            end
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 13
-    // NOP
-    // ============================================================
-
-    task test_nop;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 13: NOP");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h111);
-
-            program_memory[1] =
-                ENC_R(NOP,0,0,0);
-
-            program_memory[2] =
-                ENC_I(LOAD_IMM,2,0,12'h222);
-
-            program_memory[3] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(1,32'h00000111);
-            check_reg(2,32'h00000222);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 14
-    // XOR
-    // ============================================================
-
-    task test_xor;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 14: XOR");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'hAAA);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h555);
-
-            program_memory[2] =
-                ENC_R(XOR_OP,3,1,2);
-
-            program_memory[3] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000FFF);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 15
-    // ROL
-    // ============================================================
-
-    task test_rol;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 15: ROL");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h001);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h001);
-
-            program_memory[2] =
-                ENC_R(ROL,3,1,2);
-
-            program_memory[3] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000002);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 16
-    // ROR
-    // ============================================================
-
-    task test_ror;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 16: ROR");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h001);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h001);
-
-            program_memory[2] =
-                ENC_R(ROR,3,1,2);
-
-            program_memory[3] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h80000000);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 17
-    // SAR
-    // ============================================================
-
-    task test_sar;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 17: SAR");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h800);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h001);
-
-            program_memory[2] =
-                ENC_R(SAR,3,1,2);
-
-            program_memory[3] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000400);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 18
-    // ADDI
-    // ============================================================
-
-    task test_addi;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 18: ADDI");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h100);
-
-            program_memory[1] =
-                ENC_I(ADDI,2,1,12'h010);
-
-            program_memory[2] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(2,32'h00000110);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 19
-    // SUBI
-    // ============================================================
-
-    task test_subi;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 19: SUBI");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h100);
-
-            program_memory[1] =
-                ENC_I(SUBI,2,1,12'h010);
-
-            program_memory[2] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(2,32'h000000F0);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 20
-    // ANDI
-    // ============================================================
-
-    task test_andi;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 20: ANDI");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'hFFF);
-
-            program_memory[1] =
-                ENC_I(ANDI,2,1,12'h0F0);
-
-            program_memory[2] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(2,32'h000000F0);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 21
-    // ORI
-    // ============================================================
-
-    task test_ori;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 21: ORI");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'hF00);
-
-            program_memory[1] =
-                ENC_I(ORI,2,1,12'h0FF);
-
-            program_memory[2] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(2,32'h00000FFF);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 22
-    // XORI
-    // ============================================================
-
-    task test_xori;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 22: XORI");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'hAAA);
-
-            program_memory[1] =
-                ENC_I(XORI,2,1,12'h0FF);
-
-            program_memory[2] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(2,32'h00000A55);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 23
-    // CMP
-    // ============================================================
-
-    task test_cmp;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 23: CMP FLAGS");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h005);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h005);
-
-            program_memory[2] =
-                ENC_R(CMP,0,1,2);
-
-            program_memory[3] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_psr(4'b0101);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 24
-    // BEQ TAKEN
-    // ============================================================
-
-    task test_beq;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 24: BEQ");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h005);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h005);
-
-            program_memory[2] =
-                ENC_R(CMP,0,1,2);
-
-            program_memory[3] =
-                ENC_J(BEQ,12'h006);
-
-            program_memory[4] =
-                ENC_I(LOAD_IMM,3,0,12'h111);
-
-            program_memory[5] =
-                ENC_J(JMP,12'h007);
-
-            program_memory[6] =
-                ENC_I(LOAD_IMM,3,0,12'h222);
-
-            program_memory[7] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000222);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 25
-    // BNE TAKEN
-    // ============================================================
-
-    task test_bne_extended;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 25: BNE");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h005);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h006);
-
-            program_memory[2] =
-                ENC_R(CMP,0,1,2);
-
-            program_memory[3] =
-                ENC_J(BNE,12'h006);
-
-            program_memory[4] =
-                ENC_I(LOAD_IMM,3,0,12'h111);
-
-            program_memory[5] =
-                ENC_J(JMP,12'h007);
-
-            program_memory[6] =
-                ENC_I(LOAD_IMM,3,0,12'h222);
-
-            program_memory[7] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000222);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 26
-    // BLT
-    // ============================================================
-
-    task test_blt;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 26: BLT");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h001);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h002);
-
-            program_memory[2] =
-                ENC_R(CMP,0,1,2);
-
-            program_memory[3] =
-                ENC_J(BLT,12'h006);
-
-            program_memory[4] =
-                ENC_I(LOAD_IMM,3,0,12'h111);
-
-            program_memory[5] =
-                ENC_J(JMP,12'h007);
-
-            program_memory[6] =
-                ENC_I(LOAD_IMM,3,0,12'h222);
-
-            program_memory[7] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000222);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 27
-    // BGE
-    // ============================================================
-
-    task test_bge;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 27: BGE");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h005);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h002);
-
-            program_memory[2] =
-                ENC_R(CMP,0,1,2);
-
-            program_memory[3] =
-                ENC_J(BGE,12'h006);
-
-            program_memory[4] =
-                ENC_I(LOAD_IMM,3,0,12'h111);
-
-            program_memory[5] =
-                ENC_J(JMP,12'h007);
-
-            program_memory[6] =
-                ENC_I(LOAD_IMM,3,0,12'h222);
-
-            program_memory[7] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000222);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 28
-    // BLTU
-    // ============================================================
-
-    task test_bltu;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 28: BLTU");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h001);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h002);
-
-            program_memory[2] =
-                ENC_R(CMP,0,1,2);
-
-            program_memory[3] =
-                ENC_J(BLTU,12'h006);
-
-            program_memory[4] =
-                ENC_I(LOAD_IMM,3,0,12'h111);
-
-            program_memory[5] =
-                ENC_J(JMP,12'h007);
-
-            program_memory[6] =
-                ENC_I(LOAD_IMM,3,0,12'h222);
-
-            program_memory[7] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000222);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 29
-    // BGEU
-    // ============================================================
-
-    task test_bgeu;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 29: BGEU");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h005);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h002);
-
-            program_memory[2] =
-                ENC_R(CMP,0,1,2);
-
-            program_memory[3] =
-                ENC_J(BGEU,12'h006);
-
-            program_memory[4] =
-                ENC_I(LOAD_IMM,3,0,12'h111);
-
-            program_memory[5] =
-                ENC_J(JMP,12'h007);
-
-            program_memory[6] =
-                ENC_I(LOAD_IMM,3,0,12'h222);
-
-            program_memory[7] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000222);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 30
-    // JMP_REG
-    // ============================================================
-
-    task test_jmp_reg;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 30: JMP_REG");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h006);
-
-            program_memory[1] =
-                ENC_R(JMP_REG,0,1,0);
-
-            program_memory[2] =
-                ENC_I(LOAD_IMM,2,0,12'h111);
-
-            program_memory[3] =
-                ENC_I(LOAD_IMM,2,0,12'h111);
-
-            program_memory[4] =
-                ENC_I(LOAD_IMM,2,0,12'h111);
-
-            program_memory[5] =
-                ENC_I(LOAD_IMM,2,0,12'h111);
-
-            program_memory[6] =
-                ENC_I(LOAD_IMM,2,0,12'h222);
-
-            program_memory[7] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(2,32'h00000222);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 31
-    // INDIRECT LOAD / STORE
-    // ============================================================
-
-    task test_indirect_memory;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 31: LOAD_IND / STORE_IND");
-            $display("============================================");
-
-            clear_program;
-            clear_data_memory;
-
-            /*
-             * R1 = address
-             * R2 = data
-             *
-             * STORE_IND:
-             *
-             *   address = R[rs2]
-             *   data    = R[rd]
-             *
-             * therefore:
-             *
-             *   ENC_R(STORE_IND,2,0,1)
-             *
-             * means:
-             *
-             *   MEM[R1] = R2
-             */
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h120);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h555);
-
-            program_memory[2] =
-                ENC_R(STORE_IND,2,0,1);
-
-            /*
-             * LOAD_IND:
-             *
-             *   address = R[rs1]
-             *   destination = R[rd]
-             *
-             * therefore:
-             *
-             *   ENC_R(LOAD_IND,3,1,0)
-             *
-             * means:
-             *
-             *   R3 = MEM[R1]
-             */
-
-            program_memory[3] =
-                ENC_R(LOAD_IND,3,1,0);
-
-            program_memory[4] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_memory(12'h120,32'h00000555);
-            check_reg(3,32'h00000555);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 32
-    // MEMORY BOUNDARIES
-    // ============================================================
-
-    task test_memory_boundaries;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 32: MEMORY BOUNDARY ADDRESSES");
-            $display("============================================");
-
-            clear_program;
-            clear_data_memory;
-
-            data_memory[0] =
-                32'hAAAAAAAA;
-
-            data_memory[12'hFFF] =
-                32'h55555555;
-
-            program_memory[0] =
-                ENC_I(LOAD,1,0,12'h000);
-
-            program_memory[1] =
-                ENC_I(LOAD,2,0,12'hFFF);
-
-            program_memory[2] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(1,32'hAAAAAAAA);
-            check_reg(2,32'h55555555);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 33
-    // RESET
-    // ============================================================
-
-    task test_reset;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 33: RESET");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h123);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h456);
-
-            program_memory[2] =
-                {HALT,24'b0};
-
-            /*
-             * Assert reset.
-             */
-
-            rst_n = 1'b0;
-
-            repeat (4)
-                @(posedge clk);
-
-            if (pc === 12'd0) begin
-
-                $display("PASS: PC reset to 0");
-                passed = passed + 1;
-
-            end
-            else begin
-
-                $display(
-                    "FAIL: PC expected 0, got %0d",
-                    pc
-                );
-
-                failed = failed + 1;
-
-            end
-
-            /*
-             * Release reset and allow program to run.
-             */
-
-            rst_n = 1'b1;
-
-            wait_for_halt;
-
-            check_reg(1,32'h00000123);
-            check_reg(2,32'h00000456);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 34
-    // ALU EDGE VALUES
-    // ============================================================
-
-    task test_alu_edges;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 34: ALU EDGE CASES");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'hFFF);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h001);
-
-            program_memory[2] =
-                ENC_R(ADD,3,1,2);
-
-            program_memory[3] =
-                ENC_R(SUB,4,1,2);
-
-            program_memory[4] =
-                ENC_R(MUL,5,1,2);
-
-            program_memory[5] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00001000);
-            check_reg(4,32'h00000FFE);
-            check_reg(5,32'h00000FFF);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 35
-    // EQ
-    // ============================================================
-
-    task test_eq;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 35: EQ");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h005);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h005);
-
-            program_memory[2] =
-                ENC_R(EQ,3,1,2);
-
-            program_memory[3] =
-                ENC_I(LOAD_IMM,4,0,12'h006);
-
-            program_memory[4] =
-                ENC_R(EQ,5,1,4);
-
-            program_memory[5] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000001);
-            check_reg(5,32'h00000000);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 36
-    // SLT
-    // ============================================================
-
-    task test_slt;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 36: SLT");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h001);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h002);
-
-            program_memory[2] =
-                ENC_R(SLT,3,1,2);
-
-            program_memory[3] =
-                ENC_R(SLT,4,2,1);
-
-            program_memory[4] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000001);
-            check_reg(4,32'h00000000);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 37
-    // SLTU
-    // ============================================================
-
-    task test_sltu;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 37: SLTU");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LOAD_IMM,1,0,12'h001);
-
-            program_memory[1] =
-                ENC_I(LOAD_IMM,2,0,12'h002);
-
-            program_memory[2] =
-                ENC_R(SLTU,3,1,2);
-
-            program_memory[3] =
-                ENC_R(SLTU,4,2,1);
-
-            program_memory[4] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(3,32'h00000001);
-            check_reg(4,32'h00000000);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 38
-    // LUI
-    // ============================================================
-
-    task test_lui_extended;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 38: LUI");
-            $display("============================================");
-
-            clear_program;
-
-            program_memory[0] =
-                ENC_I(LUI,1,0,12'h123);
-
-            program_memory[1] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            check_reg(1,32'h12300000);
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // TEST 39
-    // HALT
-    // ============================================================
-
-    task test_halt_again;
-
-        reg [PROG_ADDR_WIDTH-1:0] saved_pc;
-
-        begin
-
-            $display("");
-            $display("============================================");
-            $display("TEST 39: HALT");
-
-            clear_program;
-
-            program_memory[0] =
-                {HALT,24'b0};
-
-            reset_cpu;
-            wait_for_halt;
-
-            saved_pc = pc;
-
-            repeat (10)
-                @(posedge clk);
-
-            if (pc === saved_pc) begin
-
-                $display("PASS: PC remains unchanged in HLT");
-                passed = passed + 1;
-
-            end
-            else begin
-
-                $display(
-                    "FAIL: PC changed during HLT"
-                );
-
-                failed = failed + 1;
-
-            end
-
-            if (dut.present_state === HLT_STATE) begin
-
-                $display("PASS: CPU remains in HLT");
-                passed = passed + 1;
-
-            end
-            else begin
-
-                $display("FAIL: CPU left HLT");
-                failed = failed + 1;
-
-            end
-
-        end
-
-    endtask
-
-
-    // ============================================================
-    // WAVEFORM
-    // ============================================================
-
-    initial begin
-
-        $dumpfile("cpu_core_tb.vcd");
-        $dumpvars(0,cpu_core_tb);
-
+endtask
+
+
+task write_known_line;
+    input [ADDR_WIDTH-1:0] base;
+    input [DATA_WIDTH-1:0] d0;
+    input [DATA_WIDTH-1:0] d1;
+    input [DATA_WIDTH-1:0] d2;
+    input [DATA_WIDTH-1:0] d3;
+
+    begin
+        memory.mem[base+0] = d0;
+        memory.mem[base+1] = d1;
+        memory.mem[base+2] = d2;
+        memory.mem[base+3] = d3;
+
+        ref_mem[base+0] = d0;
+        ref_mem[base+1] = d1;
+        ref_mem[base+2] = d2;
+        ref_mem[base+3] = d3;
     end
+endtask
 
 
-    // ============================================================
-    // OPTIONAL LIVE DEBUG
-    // ============================================================
+// ============================================================================
+// CPU READ
+// ============================================================================
 
-    /*
-     * Uncomment this block if a test hangs.
-     *
-     * It prints the CPU state every clock.
-     */
+task cpu_read;
+    input  [ADDR_WIDTH-1:0] read_addr;
+    output [DATA_WIDTH-1:0] read_data;
 
-    /*
-    always @(posedge clk) begin
+    integer timeout;
 
-        if (rst_n) begin
+    begin
+        @(negedge clk_150);
+
+        addr       = read_addr;
+        wdata      = 0;
+        read_write = 1'b0;
+        cpu_req    = 1'b1;
+
+        timeout = 0;
+
+        while(!cpu_ready && timeout < 5000) begin
+            @(negedge clk_150);
+            timeout = timeout + 1;
+        end
+
+        check(cpu_ready, "CPU read eventually completed");
+
+        read_data = rdata;
+
+        if(cpu_ready) begin
+            check(
+                read_data === ref_mem[read_addr],
+                "CPU read matches independent architectural reference"
+            );
+        end
+
+        // Count the transaction and its completion separately.  A timeout must
+        // never be counted as a successful completion.
+        cpu_read_count = cpu_read_count + 1;
+        if(cpu_ready)
+            cpu_completion_count = cpu_completion_count + 1;
+
+        cpu_req = 1'b0;
+
+        // Give the DUT one full CPU cycle to leave RESPONSE/IDLE before the
+        // next transaction is launched.
+        @(negedge clk_150);
+    end
+endtask
+
+
+// ============================================================================
+// CPU WRITE
+//
+// Architectural reference is updated immediately because the CPU store has
+// completed from the CPU's perspective. For write-back hits, backing memory
+// intentionally remains stale until eviction.
+// ============================================================================
+
+task cpu_write;
+    input [ADDR_WIDTH-1:0] write_addr;
+    input [DATA_WIDTH-1:0] write_data;
+
+    integer timeout;
+
+    begin
+        @(negedge clk_150);
+
+        addr       = write_addr;
+        wdata      = write_data;
+        read_write = 1'b1;
+        cpu_req    = 1'b1;
+
+        timeout = 0;
+
+        while(!cpu_ready && timeout < 5000) begin
+            @(negedge clk_150);
+            timeout = timeout + 1;
+        end
+
+        check(cpu_ready, "CPU write eventually completed");
+
+        // Count the request regardless of whether it timed out; completion is
+        // counted only when cpu_ready was actually observed.
+        cpu_write_count = cpu_write_count + 1;
+        if(cpu_ready) begin
+            cpu_completion_count = cpu_completion_count + 1;
+            // Architectural state changes at CPU-visible completion.
+            ref_mem[write_addr] = write_data;
+        end
+
+        cpu_req = 1'b0;
+
+        // Allow RESPONSE -> IDLE to settle before the next request.
+        @(negedge clk_150);
+    end
+endtask
+
+
+// ============================================================================
+// MEMORY WRITE SCOREBOARD
+//
+// Every backing-memory write must contain the current architectural value.
+//
+// This catches:
+//   - wrong eviction address
+//   - wrong eviction data
+//   - stale dirty data
+//   - corrupt write-through/write-miss data
+//   - wrong word ordering
+// ============================================================================
+
+always @(posedge clk_70) begin
+    if(rst_n && mem_write_en) begin
+
+        memory_write_count = memory_write_count + 1;
+
+        $display(
+            "[MEM WRITE] t=%0t ADDR=%0d DATA=%h EXPECTED=%h",
+            $time,
+            mem_addr,
+            mem_wdata,
+            ref_mem[mem_addr]
+        );
+
+        if(monitor_enabled) begin
+            if(mem_wdata !== ref_mem[mem_addr]) begin
+                scoreboard_violations = scoreboard_violations + 1;
+
+                $display(
+                    "*** SCOREBOARD ERROR: memory write does not match reference ***"
+                );
+            end
+        end
+    end
+end
+
+
+// ============================================================================
+// MEMORY READ MONITOR
+// ============================================================================
+
+always @(posedge clk_70) begin
+    if(rst_n && mem_read_en) begin
+        memory_read_count = memory_read_count + 1;
+
+        $display(
+            "[MEM READ] t=%0t ADDR=%0d",
+            $time,
+            mem_addr
+        );
+    end
+end
+
+
+// ============================================================================
+// FIFO SAFETY CHECKS
+//
+// The specification requires:
+//   never write a full FIFO
+//   never read an empty FIFO
+//
+// These are monitored continuously at the appropriate clock edges.
+// ============================================================================
+
+always @(posedge clk_150) begin
+    if(rst_n) begin
+
+        if(cache_req_en && req_fifo_full) begin
+            protocol_violations = protocol_violations + 1;
 
             $display(
-                "T=%0t PC=%03h IR=%08h OP=%02h STATE=%0d NEXT=%0d REQ=%b RW=%b ADDR=%04h RDATA=%08h READY=%b",
-                $time,
-                pc,
-                dut.instruction_reg,
-                dut.opcode,
-                dut.present_state,
-                dut.next_state,
-                cpu_req,
-                read_write,
-                addr,
-                rdata,
-                cpu_ready
+                "*** FIFO ERROR: request FIFO write while FULL t=%0t ***",
+                $time
             );
-
         end
 
+        if(response_fifo_r_en && response_fifo_empty) begin
+            protocol_violations = protocol_violations + 1;
+
+            $display(
+                "*** FIFO ERROR: response FIFO read while EMPTY t=%0t ***",
+                $time
+            );
+        end
     end
-    */
+end
 
 
-    // ============================================================
-    // MAIN TEST SEQUENCE
-    // ============================================================
+always @(posedge clk_70) begin
+    if(rst_n) begin
 
-    initial begin
+        if(req_fifo_r_en && req_fifo_empty) begin
+            protocol_violations = protocol_violations + 1;
 
-        passed = 0;
-        failed = 0;
+            $display(
+                "*** FIFO ERROR: request FIFO read while EMPTY t=%0t ***",
+                $time
+            );
+        end
 
-        rst_n = 1'b0;
+        if(response_fifo_w_en && response_fifo_full) begin
+            protocol_violations = protocol_violations + 1;
 
-        rdata_reg     = 32'b0;
-        cpu_ready_reg = 1'b0;
+            $display(
+                "*** FIFO ERROR: response FIFO write while FULL t=%0t ***",
+                $time
+            );
+        end
+    end
+end
 
-        clear_program;
-        clear_data_memory;
 
-        $display("");
-        $display("============================================");
-        $display("        CPU LITE CPU CORE TESTBENCH");
-        $display("============================================");
+// ============================================================================
+// CACHE REQUEST FORMAT CHECK
+//
+// Requests crossing from cache to controller must carry:
+//   RW + address + write data
+//
+// Read requests should not accidentally carry write intent.
+// ============================================================================
 
-        // --------------------------------------------------------
-        // BASIC INSTRUCTIONS
-        // --------------------------------------------------------
+always @(posedge clk_150) begin
+    if(rst_n && cache_req_en) begin
 
-        test_load_imm_mov;
-        test_arithmetic;
-        test_logical;
-        test_shifts;
-        test_load_store;
-        test_cmp_beq;
-        test_bne;
-        test_jmp;
-        test_jmp_if;
-        test_comparisons;
-        test_lui;
-        test_halt;
-
-        // --------------------------------------------------------
-        // EXTENDED INSTRUCTIONS
-        // --------------------------------------------------------
-
-        test_nop;
-        test_xor;
-        test_rol;
-        test_ror;
-        test_sar;
-
-        test_addi;
-        test_subi;
-        test_andi;
-        test_ori;
-        test_xori;
-
-        test_cmp;
-
-        test_beq;
-        test_bne_extended;
-        test_blt;
-        test_bge;
-        test_bltu;
-        test_bgeu;
-
-        test_jmp_reg;
-
-        test_indirect_memory;
-        test_memory_boundaries;
-
-        test_reset;
-
-        test_alu_edges;
-
-        test_eq;
-        test_slt;
-        test_sltu;
-
-        test_lui_extended;
-
-        test_halt_again;
-
-        // --------------------------------------------------------
-        // SUMMARY
-        // --------------------------------------------------------
-
-        $display("");
-        $display("============================================");
-        $display("              TEST SUMMARY");
-        $display("============================================");
-
-        $display("PASSED = %0d",passed);
-        $display("FAILED = %0d",failed);
-
-        $display("============================================");
-
-        if (failed == 0)
-            $display("*** ALL CPU CORE TESTS PASSED ***");
-        else
-            $display("*** CPU CORE TESTS FAILED ***");
-
-        $display("============================================");
-
-        #20;
-
-        $finish;
+        $display(
+            "[CACHE -> REQ FIFO] t=%0t RW=%b ADDR=%0d DATA=%h",
+            $time,
+            cache_req_data[ADDR_WIDTH+DATA_WIDTH],
+            cache_req_data[ADDR_WIDTH+DATA_WIDTH-1:DATA_WIDTH],
+            cache_req_data[DATA_WIDTH-1:0]
+        );
 
     end
+end
+
+
+// ============================================================================
+// RESET CHECK
+// ============================================================================
+
+task reset_check;
+
+    begin
+        $display("");
+        $display("==================================================");
+        $display("RESET CHECK");
+        $display("==================================================");
+
+        while(!rst_n)
+            @(posedge clk_150);
+
+        repeat(5)
+            @(posedge clk_150);
+
+        check(req_fifo_empty,
+              "Request FIFO empty after reset");
+
+        check(response_fifo_empty,
+              "Response FIFO empty after reset");
+
+        check(dut.present_state == 3'd0,
+              "Cache returned to IDLE after reset");
+
+        check(controller.present_state == 3'd0,
+              "Controller returned to IDLE after reset");
+    end
+endtask
+
+
+// ============================================================================
+// DIRECTED TEST 1
+// WRITE MISS / NO-WRITE-ALLOCATE
+// ============================================================================
+
+task test_write_miss;
+
+    begin
+        $display("");
+        $display("==================================================");
+        $display("DIRECTED 1: WRITE MISS / NO-WRITE-ALLOCATE");
+        $display("==================================================");
+
+        cpu_write(
+            14'd1000,
+            32'hDEADBEEF
+        );
+
+        // Backing memory must eventually contain the store.
+        wait_for_quiet(100);
+
+        check(
+            memory.mem[1000] === 32'hDEADBEEF,
+            "Write miss reached backing memory"
+        );
+
+        // Address decomposition for ADDR_WIDTH=14, WORDS_PER=4,
+        // CACHE_LINES=8:
+        //   offset = addr[1:0]
+        //   index  = addr[4:2]
+        //   tag    = addr[13:5]
+        // For address 1000: index=2, tag=31.
+        // The old check used (1000 >> 5) as an array index (31), which is
+        // outside valid_array/tag_array[0:7] and made the TB fail for the
+        // wrong reason.
+        check(
+            !(dut.valid_array[(1000 >> OFFSET_BITS) & (CACHE_LINES-1)] &&
+              dut.tag_array[(1000 >> OFFSET_BITS) & (CACHE_LINES-1)] ==
+              (1000 >> (OFFSET_BITS + INDEX_BITS))),
+            "Write miss did not allocate matching cache line"
+        );
+    end
+endtask
+
+
+// ============================================================================
+// DIRECTED TEST 2
+// READ MISS / REFILL
+// ============================================================================
+
+task test_refill;
+
+    reg [DATA_WIDTH-1:0] rd;
+
+    begin
+        $display("");
+        $display("==================================================");
+        $display("DIRECTED 2: READ MISS / FOUR-WORD REFILL");
+        $display("==================================================");
+
+        write_known_line(
+            14'd100,
+            32'h11111111,
+            32'h22222222,
+            32'h33333333,
+            32'h44444444
+        );
+
+        cpu_read(14'd100, rd);
+        cpu_read(14'd101, rd);
+        cpu_read(14'd102, rd);
+        cpu_read(14'd103, rd);
+
+        check(
+            dut.valid_array[1] == 1'b1,
+            "Refilled cache line is valid"
+        );
+
+        check(
+            dut.data_array[1][0] === 32'h11111111,
+            "Refill word 0 correct"
+        );
+
+        check(
+            dut.data_array[1][1] === 32'h22222222,
+            "Refill word 1 correct"
+        );
+
+        check(
+            dut.data_array[1][2] === 32'h33333333,
+            "Refill word 2 correct"
+        );
+
+        check(
+            dut.data_array[1][3] === 32'h44444444,
+            "Refill word 3 correct"
+        );
+    end
+endtask
+
+
+// ============================================================================
+// DIRECTED TEST 3
+// DIRTY EVICTION
+// ============================================================================
+
+task test_dirty_eviction;
+
+    reg [DATA_WIDTH-1:0] rd;
+
+    begin
+        $display("");
+        $display("==================================================");
+        $display("DIRECTED 3: DIRTY EVICTION / WRITE-BACK");
+        $display("==================================================");
+
+        // Address 800 maps to index 0 for an 8-line / 4-word-line cache.
+        write_known_line(
+            14'd800,
+            32'h80000000,
+            32'h80000001,
+            32'h80000002,
+            32'h80000003
+        );
+
+        // Bring line into cache.
+        cpu_read(14'd800, rd);
+
+        // Modify only one word. Backing memory should remain old.
+        cpu_write(
+            14'd801,
+            32'hDEADC0DE
+        );
+
+        check(
+            memory.mem[801] === 32'h80000001,
+            "Write-back hit left backing memory stale before eviction"
+        );
+
+        // 1056 = 800 + 256. Same index, different tag.
+        write_known_line(
+            14'd1056,
+            32'h10560000,
+            32'h10560001,
+            32'h10560002,
+            32'h10560003
+        );
+
+        cpu_read(14'd1056, rd);
+
+        // The dirty line must now be fully written back.
+        wait_for_quiet(200);
+
+        check(
+            memory.mem[800] === 32'h80000000,
+            "Dirty eviction preserved word 0"
+        );
+
+        check(
+            memory.mem[801] === 32'hDEADC0DE,
+            "Dirty eviction wrote modified word 1"
+        );
+
+        check(
+            memory.mem[802] === 32'h80000002,
+            "Dirty eviction preserved word 2"
+        );
+
+        check(
+            memory.mem[803] === 32'h80000003,
+            "Dirty eviction preserved word 3"
+        );
+
+        check(
+            memory.mem[1056] === 32'h10560000,
+            "Replacement line word 0 correct"
+        );
+
+        check(
+            memory.mem[1059] === 32'h10560003,
+            "Replacement line word 3 correct"
+        );
+    end
+endtask
+
+
+// ============================================================================
+// DIRECTED TEST 4
+// CLEAN EVICTION
+// ============================================================================
+
+task test_clean_eviction;
+
+    reg [DATA_WIDTH-1:0] rd;
+    integer writes_before;
+
+    begin
+        $display("");
+        $display("==================================================");
+        $display("DIRECTED 4: CLEAN EVICTION");
+        $display("==================================================");
+
+        write_known_line(
+            14'd1200,
+            32'h12000000,
+            32'h12000001,
+            32'h12000002,
+            32'h12000003
+        );
+
+        cpu_read(14'd1200, rd);
+
+        writes_before = memory_write_count;
+
+        // 1456 = 1200 + 256, same index/different tag.
+        write_known_line(
+            14'd1456,
+            32'h14560000,
+            32'h14560001,
+            32'h14560002,
+            32'h14560003
+        );
+
+        cpu_read(14'd1456, rd);
+
+        wait_for_quiet(150);
+
+        check(
+            memory_write_count == writes_before,
+            "Clean eviction generated no write-back"
+        );
+    end
+endtask
+
+
+// ============================================================================
+// DIRECTED TEST 5
+// SAME INDEX / MANY TAGS
+// ============================================================================
+
+task test_collision_stress;
+
+    integer k;
+    reg [DATA_WIDTH-1:0] rd;
+    integer base;
+
+    begin
+        $display("");
+        $display("==================================================");
+        $display("DIRECTED 5: SAME INDEX / MANY TAG COLLISIONS");
+        $display("==================================================");
+
+        // All addresses are separated by 32 words and therefore target
+        // repeated cache indices with different tags.
+        for(k = 0; k < 12; k = k + 1) begin
+
+            base = 32 * k;
+
+            write_known_line(
+                base,
+                32'hA0000000 + k,
+                32'hA1000000 + k,
+                32'hA2000000 + k,
+                32'hA3000000 + k
+            );
+
+            cpu_read(base, rd);
+
+            check(
+                rd === ref_mem[base],
+                "Collision stress returned expected word"
+            );
+
+            // Dirty a different word every iteration.
+            cpu_write(
+                base + 1,
+                32'hD0000000 + k
+            );
+
+            cpu_read(base + 1, rd);
+
+            check(
+                rd === (32'hD0000000 + k),
+                "Dirty collision word reads back correctly"
+            );
+        end
+    end
+endtask
+
+
+// ============================================================================
+// RANDOM TEST
+// ============================================================================
+
+task randomized_test;
+
+    integer k;
+    integer op;
+    integer r;
+    integer a;
+    reg [ADDR_WIDTH-1:0] ra;
+    reg [DATA_WIDTH-1:0] rd;
+    reg [DATA_WIDTH-1:0] wd;
+
+    begin
+        $display("");
+        $display("==================================================");
+        $display("RANDOMIZED ARCHITECTURAL TEST");
+        $display("==================================================");
+
+        // Deterministic seed so failures can be reproduced.
+        r = 32'h5A17C0DE;
+
+        for(k = 0; k < 300; k = k + 1) begin
+
+            op = $random(r);
+
+            if(op < 0)
+                op = -op;
+
+            op = op % 100;
+
+            // Deliberately bias a portion of traffic toward cache collisions.
+            if((k % 5) == 0) begin
+                a = ((k / 5) % 8) * 32;
+                a = a + ((k / 7) % 4);
+            end
+            else begin
+                a = $random(r);
+
+                if(a < 0)
+                    a = -a;
+
+                a = a % MEM_WORDS;
+            end
+
+            ra = a[ADDR_WIDTH-1:0];
+
+            wd = $random(r);
+
+            if(op < 55) begin
+                cpu_read(ra, rd);
+            end
+            else begin
+                cpu_write(ra, wd);
+            end
+
+            // Periodically force the transaction stream to settle.
+            if((k % 25) == 24)
+                wait_for_quiet(100);
+        end
+
+        $display(
+            "[RANDOM] Reads=%0d Writes=%0d CPU completions=%0d",
+            cpu_read_count,
+            cpu_write_count,
+            cpu_completion_count
+        );
+    end
+endtask
+
+
+// ============================================================================
+// BOUNDARY TEST
+// ============================================================================
+
+task boundary_test;
+
+    reg [DATA_WIDTH-1:0] rd;
+
+    begin
+        $display("");
+        $display("==================================================");
+        $display("BOUNDARY ADDRESS TEST");
+        $display("==================================================");
+
+        write_known_line(
+            14'd0,
+            32'hCAFEBABE,
+            32'h00000001,
+            32'h00000002,
+            32'h00000003
+        );
+
+        cpu_read(14'd0, rd);
+        cpu_read(14'd3, rd);
+
+        write_known_line(
+            14'd16380,
+            32'h10000000,
+            32'h20000000,
+            32'h30000000,
+            32'hFACEFACE
+        );
+
+        cpu_read(14'd16380, rd);
+        cpu_read(14'd16381, rd);
+        cpu_read(14'd16382, rd);
+        cpu_read(14'd16383, rd);
+
+        check(
+            rd === 32'hFACEFACE,
+            "Highest legal memory address returned correctly"
+        );
+    end
+endtask
+
+
+// ============================================================================
+// QUIET WAIT
+// ============================================================================
+
+task wait_for_quiet;
+    input integer cycles;
+
+    integer i;
+
+    begin
+        for(i = 0; i < cycles; i = i + 1)
+            @(posedge clk_150);
+    end
+endtask
+
+
+// ============================================================================
+// DRAIN ALL DIRTY CACHE LINES
+//
+// A write-back cache may legally retain dirty data after the last CPU
+// transaction. Waiting alone cannot make backing memory equal the reference
+// model.  Force an eviction for every currently dirty line by issuing a read
+// to a different tag with the same index.  Repeat because an eviction can
+// expose another dirty line at that index.
+// ============================================================================
+task drain_dirty_lines;
+    integer pass;
+    integer idx;
+    integer victim_tag;
+    integer alt_tag;
+    reg [ADDR_WIDTH-1:0] victim_addr;
+    reg [ADDR_WIDTH-1:0] conflict_addr;
+    reg [DATA_WIDTH-1:0] rd;
+    reg found_dirty;
+
+    begin
+        $display("");
+        $display("==================================================");
+        $display("DRAINING DIRTY CACHE LINES");
+        $display("==================================================");
+
+        // At most CACHE_LINES+2 passes are needed for the small direct-mapped
+        // cache used by this TB. Extra passes make the procedure robust to
+        // replacement chains.
+        for(pass = 0; pass < (CACHE_LINES + 2); pass = pass + 1) begin
+            found_dirty = 1'b0;
+
+            for(idx = 0; idx < CACHE_LINES; idx = idx + 1) begin
+                if(dut.valid_array[idx] && dut.dirty_bit_array[idx]) begin
+                    found_dirty = 1'b1;
+
+                    victim_tag = dut.tag_array[idx];
+                    victim_addr = (victim_tag << (INDEX_BITS + OFFSET_BITS)) |
+                                  (idx << OFFSET_BITS);
+
+                    // Select a different tag while preserving the index.
+                    alt_tag = 0;
+                    if(alt_tag == victim_tag)
+                        alt_tag = 1;
+                    if(alt_tag == victim_tag)
+                        alt_tag = 2;
+
+                    conflict_addr = (alt_tag << (INDEX_BITS + OFFSET_BITS)) |
+                                    (idx << OFFSET_BITS);
+
+                    cpu_read(conflict_addr, rd);
+                end
+            end
+
+            wait_for_quiet(50);
+
+            if(!found_dirty)
+                pass = CACHE_LINES + 2;
+        end
+
+        wait_for_quiet(200);
+
+        for(idx = 0; idx < CACHE_LINES; idx = idx + 1) begin
+            check(
+                !(dut.valid_array[idx] && dut.dirty_bit_array[idx]),
+                "No dirty cache line remains after final drain"
+            );
+        end
+    end
+endtask
+
+
+// ============================================================================
+// FINAL BACKING MEMORY CHECK
+//
+// For a write-back cache, all dirty state must be drained before this check.
+// ============================================================================
+
+task final_memory_check;
+
+    integer i;
+
+    begin
+        $display("");
+        $display("==================================================");
+        $display("FINAL BACKING MEMORY CONSISTENCY CHECK");
+        $display("==================================================");
+
+        // First force all remaining dirty cache lines to backing memory.
+        drain_dirty_lines();
+        wait_for_quiet(500);
+
+        for(i = 0; i < MEM_WORDS; i = i + 1) begin
+            if(memory.mem[i] !== ref_mem[i]) begin
+                failed_checks = failed_checks + 1;
+
+                $display(
+                    "[FAIL] FINAL MEMORY MISMATCH ADDR=%0d MEM=%h REF=%h",
+                    i,
+                    memory.mem[i],
+                    ref_mem[i]
+                );
+            end
+        end
+
+        check(
+            req_fifo_empty,
+            "Request FIFO empty at final quiescence"
+        );
+
+        check(
+            response_fifo_empty,
+            "Response FIFO empty at final quiescence"
+        );
+
+        check(
+            dut.present_state == 3'd0,
+            "Cache returned to IDLE"
+        );
+
+        check(
+            controller.present_state == 3'd0,
+            "Controller returned to IDLE"
+        );
+
+        check(
+            protocol_violations == 0,
+            "No FIFO protocol violations detected"
+        );
+
+        check(
+            scoreboard_violations == 0,
+            "No illegal/corrupt backing-memory writes detected"
+        );
+
+        check(
+            cpu_completion_count == (cpu_read_count + cpu_write_count),
+            "Every CPU transaction received exactly one completion"
+        );
+    end
+endtask
+
+
+// ============================================================================
+// MAIN
+// ============================================================================
+
+initial begin
+
+    cpu_req    = 1'b0;
+    read_write = 1'b0;
+    addr       = 0;
+    wdata      = 0;
+
+    total_checks = 0;
+    passed_checks = 0;
+    failed_checks = 0;
+
+    cpu_read_count = 0;
+    cpu_write_count = 0;
+    cpu_completion_count = 0;
+
+    memory_read_count = 0;
+    memory_write_count = 0;
+
+    protocol_violations = 0;
+    scoreboard_violations = 0;
+
+    monitor_enabled = 1'b0;
+
+    initialize_memory();
+
+    $display("");
+    $display("==================================================");
+    $display("CPU LITE HARD VERIFICATION TESTBENCH");
+    $display("WRITE-BACK + NO-WRITE-ALLOCATE");
+    $display("==================================================");
+
+    reset_check();
+
+    // Do not enable the backing-memory scoreboard until initialization is done.
+    monitor_enabled = 1'b1;
+
+    test_write_miss();
+
+    test_refill();
+
+    test_dirty_eviction();
+
+    test_clean_eviction();
+
+    test_collision_stress();
+
+    boundary_test();
+
+    randomized_test();
+
+    final_memory_check();
+
+    $display("");
+    $display("==================================================");
+    $display("FINAL RESULTS");
+    $display("==================================================");
+
+    $display("Total checks          : %0d", total_checks);
+    $display("Passed                : %0d", passed_checks);
+    $display("Failed                : %0d", failed_checks);
+
+    $display("CPU reads             : %0d", cpu_read_count);
+    $display("CPU writes            : %0d", cpu_write_count);
+    $display("CPU completions       : %0d", cpu_completion_count);
+
+    $display("Memory reads          : %0d", memory_read_count);
+    $display("Memory writes         : %0d", memory_write_count);
+
+    $display("FIFO protocol errors  : %0d", protocol_violations);
+    $display("Scoreboard errors     : %0d", scoreboard_violations);
+
+    if(failed_checks == 0 &&
+       protocol_violations == 0 &&
+       scoreboard_violations == 0) begin
+
+        $display("*** HARD VERIFICATION PASSED ***");
+    end
+    else begin
+        $display("*** HARD VERIFICATION FAILED ***");
+    end
+
+    $display("==================================================");
+
+    #100;
+    $finish;
+end
 
 endmodule
 

@@ -275,6 +275,7 @@ begin
           data_array[addr_index][refill_resp_index] <= fifo_resp_data;
           if(refill_resp_count == WORDS_PER-1)
           begin
+              dirty_bit_array[addr_index] <= 1'b0;
               valid_array[addr_index] <= 1'b1;
               tag_array[addr_index]   <= addr_tag;
           end
@@ -282,7 +283,7 @@ begin
     end
     RESPONSE:
     begin
-       if(reg_read_write)
+       if(cache_hit && reg_read_write)
        begin
           dirty_bit_array[addr_index] <= 1'b1;
           data_array[addr_index][addr_offset] <= reg_wdata;
