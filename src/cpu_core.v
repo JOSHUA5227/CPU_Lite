@@ -1,7 +1,8 @@
 module cpu_core#(
 parameter PROG_ADDR_WIDTH = 12,
 parameter DATA_ADDR_WIDTH = 14,
-parameter DATA_WIDTH = 32
+parameter DATA_WIDTH = 32,
+parameter STACK_LIMIT = 14'h3F00
 )(
 
 input wire clk,
@@ -20,6 +21,7 @@ output reg read_write,
 output reg [DATA_ADDR_WIDTH-1:0] addr,
 output reg [DATA_WIDTH-1:0] wdata
 );
+localparam STACK_START = 14'h3FFF;
 
 localparam RESET = 3'd0;
 localparam FETCH = 3'd1;
@@ -75,6 +77,7 @@ localparam RET = 8'h28;
 
 reg [3:0] psr;
 reg [DATA_WIDTH-1:0] R [0:15];
+reg [DATA_ADDR_WIDTH-1:0] stack_pointer;
 
 reg Z,N,C,V;
 reg [DATA_WIDTH-1:0] op_a,op_b;
@@ -116,7 +119,7 @@ begin
   begin
     case(opcode)
     NOP: next_state = FETCH;
-    LOAD,LOAD_IND,STORE,STORE_IND: next_state = MEMORY;
+    LOAD,LOAD_IND,STORE,STORE_IND,CALL,RET: next_state = MEMORY;
     HALT: next_state = HLT;
     default: next_state = EXECUTE;
     endcase
@@ -378,9 +381,31 @@ begin
          default: pc <=  pc + 1;         
          endcase
       end
+      else if(present_state == MEMORY && cpu_ready)
+      begin
+          case(opcode)
+          CALL: pc <= imm;
+          RET: pc <= rdata[PROG_ADDR_WIDTH-1:0];
+          default: pc <= pc;
+          endcase
+      end
   end   
 end
 
+// STACK POINTER Block
+always@(posedge clk or negedge rst_n)
+begin
+  if(!rst_n)
+    stack_pointer <= STACK_START;
+  else if(present_state == MEMORY && cpu_ready)
+  begin
+     case(opcode)
+     CALL: stack_pointer <= (stack_pointer > STACK_LIMIT) ? stack_pointer -1 : stack_pointer;
+     RET: stack_pointer <= (stack_pointer < STACK_START) ? stack_pointer + 1 : stack_pointer;
+     default: stack_pointer <= stack_pointer;
+     endcase
+  end
+end
 //MEMORY State
 always@(*)
 begin
@@ -413,6 +438,17 @@ begin
           read_write = 1;
           addr = R[rs2][DATA_ADDR_WIDTH-1:0];
           wdata = R[rd];
+      end
+      CALL:
+      begin
+         read_write = 1;
+         addr = { {DATA_ADDR_WIDTH-14{1'b0}},stack_pointer};
+         wdata = pc;
+      end
+      RET:
+      begin
+        read_write = 0;
+        addr = { {DATA_ADDR_WIDTH-14{1'b0}},stack_pointer + 1};
       end
       endcase
   end
