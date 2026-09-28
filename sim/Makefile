@@ -23,3 +23,4 @@ VERILOG_SOURCES = \
 WAVES = 1
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
+
