@@ -448,7 +448,7 @@ begin
       RET:
       begin
         read_write = 0;
-        addr = { {DATA_ADDR_WIDTH-14{1'b0}},stack_pointer + 1};
+        addr = stack_pointer + 1;
       end
       endcase
   end
