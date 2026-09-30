@@ -2424,7 +2424,106 @@ async def test_repeated_dirty_eviction(dut, reg):
         0x11111111
     )
 
+# ============================================================
+# TEST 35: FACTORIAL
+# ============================================================
 
+async def test_factorial(dut, reg):
+
+    print()
+    print("==============================================")
+    print("TEST 35: FACTORIAL")
+    print("==============================================")
+
+    # --------------------------------------------------------
+    # factorial(5) = 120 = 0x78
+    #
+    # R1 = n
+    # R2 = result
+    # R3 = 1
+    # R4 = value loaded back from memory
+    #
+    # Program:
+    #
+    # 0: LOAD_IMM R1, 5
+    # 1: LOAD_IMM R2, 1
+    # 2: LOAD_IMM R3, 1
+    #
+    # loop:
+    # 3: CMP     R1, R3
+    # 4: BLT     done
+    # 5: MUL     R2, R2, R1
+    # 6: SUBI    R1, R1, 1
+    # 7: JMP     loop
+    #
+    # done:
+    # 8: STORE   R2, 0x200
+    # 9: LOAD    R4, 0x200
+    # 10: HALT
+    # --------------------------------------------------------
+
+    program = [
+        load_imm(1, 5),              # 0
+        load_imm(2, 1),              # 1
+        load_imm(3, 1),              # 2
+
+        r_type(OP_CMP, 0, 1, 3),     # 3: CMP R1, R3
+        branch(OP_BLT, 8),            # 4: if R1 < 1 -> done
+
+        r_type(OP_MUL, 2, 2, 1),     # 5: R2 = R2 * R1
+        i_type(OP_SUBI, 1, 1, 1),    # 6: R1 = R1 - 1
+        jmp(3),                       # 7: loop
+
+        store(2, 0x200),              # 8: MEM[0x200] = R2
+        load(4, 0x200),               # 9: R4 = MEM[0x200]
+        halt(),                        # 10
+    ]
+
+    # Load program into program memory
+    await prepare_test(dut, program)
+
+    # Run CPU
+    assert await wait_for_halt(
+        dut,
+        max_cycles=10000,
+        test_name="TEST 35"
+    )
+
+    # --------------------------------------------------------
+    # Check factorial result
+    # --------------------------------------------------------
+
+    reg.check(
+        "FACTORIAL R1",
+        get_reg(dut, 1),
+        0
+    )
+
+    reg.check(
+        "FACTORIAL R2",
+        get_reg(dut, 2),
+        120
+    )
+
+    reg.check(
+        "FACTORIAL R3",
+        get_reg(dut, 3),
+        1
+    )
+
+    # --------------------------------------------------------
+    # IMPORTANT:
+    #
+    # This LOAD goes through the CPU/cache.
+    # Since the cache is write-back, this is the correct
+    # immediate check after STORE.
+    # --------------------------------------------------------
+
+    reg.check(
+        "FACTORIAL LOADBACK R4",
+        get_reg(dut, 4),
+        120
+    )
 # ============================================================
 # MASTER REGRESSION
 # ============================================================
@@ -2542,6 +2641,7 @@ async def test_cpu_regression(dut):
 
     await test_repeated_dirty_eviction(dut, reg)
 
+    await test_factorial(dut, reg)
     # --------------------------------------------------------
     # FINAL SUMMARY
     # --------------------------------------------------------
