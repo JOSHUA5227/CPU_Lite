@@ -64,6 +64,9 @@ assign cache_hit = valid_array[addr_index] && (tag_array[addr_index] == addr_tag
 wire [OFFSET_BITS-1:0] refill_resp_index;
 assign refill_resp_index = refill_resp_count[OFFSET_BITS-1:0];
 
+wire [OFFSET_BITS-1:0] writeback_req_index;
+assign writeback_req_index = refill_resp_count[OFFSET_BITS-1:0];
+
 localparam IDLE = 3'd0;
 localparam LOOKUP = 3'd1;
 localparam FIFO_WAIT = 3'd2;
@@ -137,7 +140,7 @@ begin
     begin
       if(!fifo_req_full && writeback_req_count < WORDS_PER )
       begin
-        fifo_req_data = {1'b1,writeback_base+writeback_req_count,data_array[addr_index][writeback_req_count]};
+        fifo_req_data = {1'b1,writeback_base+writeback_req_count,data_array[addr_index][writeback_req_index]};
         fifo_req_en = 1;
       end
     end

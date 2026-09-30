@@ -442,8 +442,8 @@ begin
       CALL:
       begin
          read_write = 1;
-         addr = { {DATA_ADDR_WIDTH-14{1'b0}},stack_pointer};
-         wdata = pc;
+         addr = stack_pointer;
+         wdata = { {DATA_WIDTH-12{1'b0}},pc};
       end
       RET:
       begin
