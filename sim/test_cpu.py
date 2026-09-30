@@ -51,6 +51,9 @@ OP_BLTU      = 0x24
 OP_BGEU      = 0x25
 
 OP_JMP_REG   = 0x26
+OP_CALL      = 0x27
+OP_RET       = 0x28
+
 OP_HALT      = 0xFF
 
 
@@ -133,6 +136,32 @@ def jmp_reg(rs1):
     )
 
 
+# ============================================================
+# CALL / RET
+#
+# CALL:
+#   stack[SP] = PC
+#   SP = SP - 1
+#   PC = immediate address
+#
+# RET:
+#   PC = stack[SP + 1]
+#   SP = SP + 1
+# ============================================================
+
+def call(addr):
+    return (
+        ((OP_CALL & 0xFF) << 24)
+        | (addr & 0xFFF)
+    )
+
+
+def ret():
+    return (
+        (OP_RET & 0xFF) << 24
+    )
+
+
 def halt():
     return 0xFF000000
 
@@ -201,6 +230,10 @@ def get_state(dut):
 
 def get_ir(dut):
     return int(cpu_core(dut).instruction_reg.value)
+
+
+def get_stack_pointer(dut):
+    return int(cpu_core(dut).stack_pointer.value)
 
 
 def get_data_mem(dut, addr):
@@ -328,6 +361,7 @@ async def wait_for_halt(
     print(f"PC    = {get_pc(dut):03X}")
     print(f"STATE = {get_state(dut)}")
     print(f"IR    = {get_ir(dut):08X}")
+    print(f"SP    = {get_stack_pointer(dut):04X}")
 
     for i in range(1, 9):
         print(f"R{i}    = {get_reg(dut, i):08X}")
@@ -1331,12 +1365,266 @@ async def test_jmp_reg(dut, reg):
 
 # ============================================================
 # TEST 22
+# CALL / RET
+# ============================================================
+
+async def test_call_ret(dut, reg):
+
+    test_header(22, "CALL / RET")
+
+    STACK_START = 0x3FFF
+
+    program = [
+
+        # ----------------------------------------------------
+        # MAIN
+        # ----------------------------------------------------
+
+        load_imm(1, 0x111),     # 0
+        call(6),                # 1
+
+        # CALL must return here
+        load_imm(2, 0x222),     # 2
+        halt(),                 # 3
+
+        # These must never execute
+        load_imm(15, 0xBAD),    # 4
+        load_imm(15, 0xBAD),    # 5
+
+        # ----------------------------------------------------
+        # SUBROUTINE
+        # ----------------------------------------------------
+
+        load_imm(3, 0x333),     # 6
+        ret(),                  # 7
+    ]
+
+    await prepare_test(dut, program)
+
+    assert await wait_for_halt(
+        dut,
+        max_cycles=10000,
+        test_name="TEST 22"
+    )
+
+    # --------------------------------------------------------
+    # Main executed
+    # --------------------------------------------------------
+
+    reg.check(
+        "CALL main R1",
+        get_reg(dut, 1),
+        0x111
+    )
+
+    # --------------------------------------------------------
+    # Subroutine executed
+    # --------------------------------------------------------
+
+    reg.check(
+        "CALL sub R3",
+        get_reg(dut, 3),
+        0x333
+    )
+
+    # --------------------------------------------------------
+    # RET returned to PC=2
+    # --------------------------------------------------------
+
+    reg.check(
+        "RET return R2",
+        get_reg(dut, 2),
+        0x222
+    )
+
+    # --------------------------------------------------------
+    # IMPORTANT:
+    # Do NOT use R15 as a stack-pointer check.
+    #
+    # R0-R15 are general-purpose registers according to the
+    # CPU specification. The stack pointer is checked through
+    # the dedicated stack_pointer RTL signal.
+    # --------------------------------------------------------
+
+    # --------------------------------------------------------
+    # CALL should restore dedicated stack pointer
+    #
+    # CALL:
+    #   stack[SP] = PC
+    #   SP = SP - 1
+    #
+    # RET:
+    #   PC = stack[SP + 1]
+    #   SP = SP + 1
+    # --------------------------------------------------------
+
+    reg.check(
+        "CALL RET stack restore",
+        get_stack_pointer(dut),
+        STACK_START
+    )
+
+    # --------------------------------------------------------
+    # Verify saved return address
+    # --------------------------------------------------------
+
+    reg.check(
+        "CALL saved PC",
+        get_data_mem(dut, STACK_START),
+        0x00000002
+    )
+# ============================================================
+# TEST 23
+# NESTED CALL / RET
+# ============================================================
+
+async def test_nested_call_ret(dut, reg):
+
+    test_header(23, "NESTED CALL / RET")
+
+    STACK_START = 0x3FFF
+
+    program = [
+
+        # ----------------------------------------------------
+        # MAIN
+        # ----------------------------------------------------
+
+        load_imm(1, 0x111),     # 0
+        call(8),                # 1
+
+        # Must execute after FUNC_A returns
+        load_imm(2, 0x222),     # 2
+        halt(),                 # 3
+
+        # Padding
+        load_imm(15, 0xBAD),    # 4
+        load_imm(15, 0xBAD),    # 5
+        load_imm(15, 0xBAD),    # 6
+        load_imm(15, 0xBAD),    # 7
+
+        # ----------------------------------------------------
+        # FUNC_A
+        # ----------------------------------------------------
+
+        load_imm(3, 0x333),     # 8
+        call(12),               # 9
+
+        # Must execute after FUNC_B returns
+        load_imm(4, 0x444),     # 10
+        ret(),                  # 11
+
+        # ----------------------------------------------------
+        # FUNC_B
+        # ----------------------------------------------------
+
+        load_imm(5, 0x555),     # 12
+        ret(),                  # 13
+    ]
+
+    await prepare_test(dut, program)
+
+    assert await wait_for_halt(
+        dut,
+        max_cycles=15000,
+        test_name="TEST 23"
+    )
+
+    # --------------------------------------------------------
+    # MAIN
+    # --------------------------------------------------------
+
+    reg.check(
+        "NEST MAIN R1",
+        get_reg(dut, 1),
+        0x111
+    )
+
+    # --------------------------------------------------------
+    # FUNC_A
+    # --------------------------------------------------------
+
+    reg.check(
+        "NEST FUNC_A R3",
+        get_reg(dut, 3),
+        0x333
+    )
+
+    # --------------------------------------------------------
+    # FUNC_B
+    # --------------------------------------------------------
+
+    reg.check(
+        "NEST FUNC_B R5",
+        get_reg(dut, 5),
+        0x555
+    )
+
+    # --------------------------------------------------------
+    # RET from FUNC_B -> instruction 10
+    # --------------------------------------------------------
+
+    reg.check(
+        "NEST return A R4",
+        get_reg(dut, 4),
+        0x444
+    )
+
+    # --------------------------------------------------------
+    # RET from FUNC_A -> instruction 2
+    # --------------------------------------------------------
+
+    reg.check(
+        "NEST return MAIN R2",
+        get_reg(dut, 2),
+        0x222
+    )
+
+    # --------------------------------------------------------
+    # Do NOT check R15 as SP.
+    #
+    # R15 is a normal GPR.
+    # The padding instructions should be skipped, but R15
+    # itself is not the stack pointer.
+    # --------------------------------------------------------
+
+    # --------------------------------------------------------
+    # Dedicated stack pointer must be restored.
+    # --------------------------------------------------------
+
+    reg.check(
+        "NEST stack restore",
+        get_stack_pointer(dut),
+        STACK_START
+    )
+
+    # --------------------------------------------------------
+    # First CALL:
+    #   stack[3FFF] = 1
+    #
+    # Second CALL:
+    #   stack[3FFE] = 9
+    # --------------------------------------------------------
+
+    reg.check(
+        "NEST saved main PC",
+        get_data_mem(dut, STACK_START),
+        0x00000002
+    )
+
+    reg.check(
+        "NEST saved func PC",
+        get_data_mem(dut, STACK_START - 1),
+        0x0000000A
+    )
+# ============================================================
+# TEST 24
 # DIRECT ADDRESS BOUNDARIES
 # ============================================================
 
 async def test_direct_memory_boundaries(dut, reg):
 
-    test_header(22, "DIRECT MEMORY BOUNDARIES")
+    test_header(24, "DIRECT MEMORY BOUNDARIES")
 
     program = [
         load_imm(1, 0x111),
@@ -1355,7 +1643,7 @@ async def test_direct_memory_boundaries(dut, reg):
 
     assert await wait_for_halt(
         dut,
-        test_name="TEST 22"
+        test_name="TEST 24"
     )
 
     reg.check(
@@ -1384,14 +1672,14 @@ async def test_direct_memory_boundaries(dut, reg):
 
 
 # ============================================================
-# TEST 23
+# TEST 25
 # 14-BIT INDIRECT ADDRESS
 # ============================================================
 
 async def test_indirect_address_boundaries(dut, reg):
 
     test_header(
-        23,
+        25,
         "14-BIT INDIRECT ADDRESS BOUNDARIES"
     )
 
@@ -1411,7 +1699,7 @@ async def test_indirect_address_boundaries(dut, reg):
 
     assert await wait_for_halt(
         dut,
-        test_name="TEST 23"
+        test_name="TEST 25"
     )
 
     reg.check(
@@ -1422,14 +1710,14 @@ async def test_indirect_address_boundaries(dut, reg):
 
 
 # ============================================================
-# TEST 24
+# TEST 26
 # CACHE / CDC SEQUENTIAL STRESS
 # ============================================================
 
 async def test_memory_stress(dut, reg):
 
     test_header(
-        24,
+        26,
         "CACHE / CDC SEQUENTIAL STRESS"
     )
 
@@ -1458,7 +1746,7 @@ async def test_memory_stress(dut, reg):
     assert await wait_for_halt(
         dut,
         max_cycles=10000,
-        test_name="TEST 24"
+        test_name="TEST 26"
     )
 
     for _ in range(20):
@@ -1474,14 +1762,14 @@ async def test_memory_stress(dut, reg):
 
 
 # ============================================================
-# TEST 25
+# TEST 27
 # MIXED ALU + MEMORY + BRANCH STRESS
 # ============================================================
 
 async def test_mixed_stress(dut, reg):
 
     test_header(
-        25,
+        27,
         "MIXED ALU / MEMORY / BRANCH STRESS"
     )
 
@@ -1527,7 +1815,7 @@ async def test_mixed_stress(dut, reg):
     assert await wait_for_halt(
         dut,
         max_cycles=10000,
-        test_name="TEST 25"
+        test_name="TEST 27"
     )
 
     for _ in range(12):
@@ -1553,14 +1841,14 @@ async def test_mixed_stress(dut, reg):
 
 
 # ============================================================
-# TEST 26
+# TEST 28
 # SINGLE DIRTY LINE WRITE-BACK
 # ============================================================
 
 async def test_single_dirty_writeback(dut, reg):
 
     test_header(
-        26,
+        28,
         "SINGLE DIRTY LINE WRITE-BACK"
     )
 
@@ -1569,14 +1857,11 @@ async def test_single_dirty_writeback(dut, reg):
 
     program = [
 
-        # Bring A into cache.
         load(1, A),
 
-        # Modify A.
         load_imm(2, 0x123),
         store(2, A),
 
-        # B conflicts with A.
         load(3, B),
 
         halt(),
@@ -1604,10 +1889,9 @@ async def test_single_dirty_writeback(dut, reg):
     assert await wait_for_halt(
         dut,
         max_cycles=10000,
-        test_name="TEST 26"
+        test_name="TEST 28"
     )
 
-    # Allow dirty write-back to reach slow memory.
     for _ in range(30):
         await RisingEdge(dut.slow_clk)
 
@@ -1649,14 +1933,14 @@ async def test_single_dirty_writeback(dut, reg):
 
 
 # ============================================================
-# TEST 27
+# TEST 29
 # FULL DIRTY CACHE LINE WRITE-BACK
 # ============================================================
 
 async def test_full_dirty_line_writeback(dut, reg):
 
     test_header(
-        27,
+        29,
         "FULL DIRTY CACHE LINE WRITE-BACK"
     )
 
@@ -1665,13 +1949,11 @@ async def test_full_dirty_line_writeback(dut, reg):
 
     program = [
 
-        # Fill A line.
         load(1, A + 0),
         load(2, A + 1),
         load(3, A + 2),
         load(4, A + 3),
 
-        # Modify every word.
         load_imm(5, 0x111),
         store(5, A + 0),
 
@@ -1684,7 +1966,6 @@ async def test_full_dirty_line_writeback(dut, reg):
         load_imm(5, 0x444),
         store(5, A + 3),
 
-        # Force eviction.
         load(6, B),
 
         halt(),
@@ -1712,7 +1993,7 @@ async def test_full_dirty_line_writeback(dut, reg):
     assert await wait_for_halt(
         dut,
         max_cycles=15000,
-        test_name="TEST 27"
+        test_name="TEST 29"
     )
 
     for _ in range(40):
@@ -1749,48 +2030,31 @@ async def test_full_dirty_line_writeback(dut, reg):
     )
 
 
-
 # ============================================================
-# TEST 29
-# RESERVED
-#
-# There was no TEST 29 in the supplied testbench.
-# Keep the numbering intact rather than inventing a test.
-# ============================================================
-
-
-
-# ============================================================
-# TEST 28
+# TEST 30
 # RELOAD AFTER DIRTY WRITE-BACK
 # ============================================================
 
 async def test_reload_after_writeback(dut, reg):
-    test_header(28, "RELOAD AFTER DIRTY WRITE-BACK")
+
+    test_header(30, "RELOAD AFTER DIRTY WRITE-BACK")
 
     A = 0x180
     B = 0x1A0
 
-    # IMPORTANT:
-    # LOAD_IMM is only 12-bit.
-    # Use make_u32() for 0xDEAD.
     program = []
 
-    # Fill A.
     program += [
         load(1, A),
     ]
 
-    # Modify A with 0x0000DEAD.
     program += make_u32(2, 0x0000DEAD)
 
     program += [
         store(2, A),
 
-        # Evict A.
         load(3, B),
 
-        # Reload A after write-back.
         load(4, A),
 
         halt(),
@@ -1813,11 +2077,9 @@ async def test_reload_after_writeback(dut, reg):
     assert await wait_for_halt(
         dut,
         max_cycles=15000,
-        test_name="TEST 28"
+        test_name="TEST 30"
     )
 
-    # Allow dirty eviction/write-back and reload traffic
-    # to completely drain through the slow domain.
     for _ in range(40):
         await RisingEdge(dut.slow_clk)
 
@@ -1841,12 +2103,13 @@ async def test_reload_after_writeback(dut, reg):
 
 
 # ============================================================
-# TEST 30
+# TEST 31
 # TWO DIRTY CACHE LINES
 # ============================================================
 
 async def test_two_dirty_lines(dut, reg):
-    test_header(30, "TWO DIRTY CACHE LINES")
+
+    test_header(31, "TWO DIRTY CACHE LINES")
 
     A = 0x200
     C = 0x220
@@ -1854,36 +2117,22 @@ async def test_two_dirty_lines(dut, reg):
 
     program = []
 
-    # --------------------------------------------------------
-    # Fill A.
-    # --------------------------------------------------------
-
     program += [
         load(1, A),
     ]
 
-    # A = 0x0000AAAA
     program += make_u32(2, 0x0000AAAA)
 
     program += [
         store(2, A),
-    ]
-
-    # --------------------------------------------------------
-    # Fill C.
-    # --------------------------------------------------------
-
-    program += [
         load(3, C),
     ]
 
-    # C = 0x0000CCCC
     program += make_u32(4, 0x0000CCCC)
 
     program += [
         store(4, C),
 
-        # Force conflicts / evictions.
         load(5, E),
 
         halt(),
@@ -1911,10 +2160,9 @@ async def test_two_dirty_lines(dut, reg):
     assert await wait_for_halt(
         dut,
         max_cycles=20000,
-        test_name="TEST 30"
+        test_name="TEST 31"
     )
 
-    # Allow both dirty write-backs to reach slow memory.
     for _ in range(60):
         await RisingEdge(dut.slow_clk)
 
@@ -1938,14 +2186,14 @@ async def test_two_dirty_lines(dut, reg):
 
 
 # ============================================================
-# TEST 31
+# TEST 32
 # CLEAN EVICTION
 # ============================================================
 
 async def test_clean_eviction_no_writeback(dut, reg):
 
     test_header(
-        31,
+        32,
         "CLEAN EVICTION"
     )
 
@@ -1954,10 +2202,8 @@ async def test_clean_eviction_no_writeback(dut, reg):
 
     program = [
 
-        # Read A only.
         load(1, A),
 
-        # Evict A without modifying it.
         load(2, B),
 
         halt(),
@@ -1982,7 +2228,7 @@ async def test_clean_eviction_no_writeback(dut, reg):
     assert await wait_for_halt(
         dut,
         max_cycles=10000,
-        test_name="TEST 31"
+        test_name="TEST 32"
     )
 
     for _ in range(40):
@@ -2011,33 +2257,31 @@ async def test_clean_eviction_no_writeback(dut, reg):
         get_data_mem(dut, A + 3),
         0xDDDDDDDD
     )
+
+
 # ============================================================
-# TEST 32
+# TEST 33
 # WRITE-BACK FOLLOWED BY NEW REQUEST
 # ============================================================
 
 async def test_writeback_stall_and_resume(dut, reg):
-    test_header(32, "WRITE-BACK STALL AND RESUME")
+
+    test_header(33, "WRITE-BACK STALL AND RESUME")
 
     A = 0x2C0
     B = 0x2E0
 
     program = [
-        # Bring A into cache.
         load(1, A),
     ]
 
-    # IMPORTANT:
-    # 0xCAFE does not fit in LOAD_IMM.
     program += make_u32(2, 0x0000CAFE)
 
     program += [
         store(2, A),
 
-        # This causes dirty eviction.
         load(3, B),
 
-        # This request comes after the eviction.
         load(4, B + 1),
 
         halt(),
@@ -2060,11 +2304,9 @@ async def test_writeback_stall_and_resume(dut, reg):
     assert await wait_for_halt(
         dut,
         max_cycles=20000,
-        test_name="TEST 32"
+        test_name="TEST 33"
     )
 
-    # Give the write-back and subsequent memory accesses
-    # enough time to drain through the slow domain.
     for _ in range(50):
         await RisingEdge(dut.slow_clk)
 
@@ -2094,12 +2336,13 @@ async def test_writeback_stall_and_resume(dut, reg):
 
 
 # ============================================================
-# TEST 33
+# TEST 34
 # REPEATED DIRTY EVICTION
 # ============================================================
 
 async def test_repeated_dirty_eviction(dut, reg):
-    test_header(33, "REPEATED DIRTY EVICTION")
+
+    test_header(34, "REPEATED DIRTY EVICTION")
 
     A = 0x300
     B = 0x320
@@ -2114,13 +2357,11 @@ async def test_repeated_dirty_eviction(dut, reg):
         load(1, A),
     ]
 
-    # R2 = 0x00001001
     program += make_u32(2, 0x00001001)
 
     program += [
         store(2, A),
 
-        # B conflicts with A -> first dirty eviction.
         load(3, B),
 
         # ====================================================
@@ -2130,16 +2371,13 @@ async def test_repeated_dirty_eviction(dut, reg):
         load(4, A),
     ]
 
-    # R5 = 0x00001002
     program += make_u32(5, 0x00001002)
 
     program += [
         store(5, A),
 
-        # B again -> second dirty eviction of A.
         load(6, B),
 
-        # A again -> final reload must see 0x1002.
         load(7, A),
 
         halt(),
@@ -2162,18 +2400,12 @@ async def test_repeated_dirty_eviction(dut, reg):
     assert await wait_for_halt(
         dut,
         max_cycles=30000,
-        test_name="TEST 33"
+        test_name="TEST 34"
     )
 
-    # Allow the second dirty eviction and final reload
-    # to completely drain through the slow domain.
     for _ in range(80):
         await RisingEdge(dut.slow_clk)
 
-    # The final value written to A is 0x1002.
-    # Checking 0x1001 here would be incorrect because that was
-    # the value from the FIRST eviction, not the final backing
-    # store contents.
     reg.check(
         "Final A write-back",
         get_data_mem(dut, A),
@@ -2191,6 +2423,7 @@ async def test_repeated_dirty_eviction(dut, reg):
         get_data_mem(dut, B),
         0x11111111
     )
+
 
 # ============================================================
 # MASTER REGRESSION
@@ -2271,13 +2504,21 @@ async def test_cpu_regression(dut):
 
     await test_jmp_reg(dut, reg)
 
+    # --------------------------------------------------------
+    # CALL / RET
+    # --------------------------------------------------------
+
+    await test_call_ret(dut, reg)
+
+    await test_nested_call_ret(dut, reg)
+
+    # --------------------------------------------------------
+    # MEMORY / CDC
+    # --------------------------------------------------------
+
     await test_direct_memory_boundaries(dut, reg)
 
     await test_indirect_address_boundaries(dut, reg)
-
-    # --------------------------------------------------------
-    # CDC / MEMORY STRESS
-    # --------------------------------------------------------
 
     await test_memory_stress(dut, reg)
 
@@ -2285,8 +2526,6 @@ async def test_cpu_regression(dut):
 
     # --------------------------------------------------------
     # WRITE-BACK / DIRTY CACHE TESTS
-    #
-    # THESE WERE MISSING FROM THE ORIGINAL MASTER REGRESSION.
     # --------------------------------------------------------
 
     await test_single_dirty_writeback(dut, reg)
@@ -2294,8 +2533,6 @@ async def test_cpu_regression(dut):
     await test_full_dirty_line_writeback(dut, reg)
 
     await test_reload_after_writeback(dut, reg)
-
-    # TEST 29 intentionally unused.
 
     await test_two_dirty_lines(dut, reg)
 

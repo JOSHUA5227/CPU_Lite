@@ -1,1272 +1,1603 @@
 `timescale 1ns/1ps
 
-// ============================================================================
-// CPU LITE - HARDER SELF-CHECKING TESTBENCH
-//
-// Assumes the DUT modules/interfaces from the original testbench:
-//
-//   cache
-//   async_fifo
-//   memory_controller
-//   data_memory
-//
-// Cache policy being verified:
-//   - direct mapped
-//   - 8 lines
-//   - 4 words/line
-//   - write-back
-//   - no-write-allocate
-//
-// Main improvements over the original TB:
-//   1. Independent architectural reference memory.
-//   2. Randomized read/write traffic.
-//   3. Deliberate same-index/different-tag collisions.
-//   4. Backing-memory write scoreboard.
-//   5. FIFO protocol safety checks.
-//   6. CPU request/completion accounting.
-//   7. Randomized transaction ordering.
-//   8. Directed dirty-eviction stress.
-//   9. Boundary-address stress.
-//  10. Final backing-memory comparison against the reference model.
-// ============================================================================
-
 module test;
 
-parameter ADDR_WIDTH  = 14;
-parameter DATA_WIDTH  = 32;
-parameter CACHE_LINES = 8;
-parameter WORDS_PER   = 4;
-parameter FIFO_DEPTH  = 8;
+    // ============================================================
+    // PARAMETERS
+    // ============================================================
 
-localparam MEM_WORDS = (1 << ADDR_WIDTH);
-localparam LINE_WORDS = WORDS_PER;
-localparam INDEX_BITS = 3;       // log2(8)
-localparam OFFSET_BITS = 2;      // log2(4)
+    parameter PROG_ADDR_WIDTH = 12;
+    parameter DATA_ADDR_WIDTH = 14;
+    parameter DATA_WIDTH      = 32;
 
+    parameter STACK_START = 14'h3FFF;
+    parameter STACK_LIMIT = 14'h3F00;
 
-// ============================================================================
-// CLOCKS
-// ============================================================================
+    // ============================================================
+    // DUT SIGNALS
+    // ============================================================
 
-reg clk_150;
-reg clk_70;
+    reg clk;
+    reg rst_n;
 
-initial begin
-    clk_150 = 1'b0;
-    forever #3.333 clk_150 = ~clk_150;
-end
+    reg  [DATA_WIDTH-1:0] instruction;
+    wire [PROG_ADDR_WIDTH-1:0] pc;
 
-initial begin
-    clk_70 = 1'b0;
-    forever #7.143 clk_70 = ~clk_70;
-end
+    reg  [DATA_WIDTH-1:0] rdata;
+    reg                   cpu_ready;
 
+    wire                   cpu_req;
+    wire                   read_write;
+    wire [DATA_ADDR_WIDTH-1:0] addr;
+    wire [DATA_WIDTH-1:0] wdata;
 
-// ============================================================================
-// RESET
-// ============================================================================
+    // ============================================================
+    // DUT
+    // ============================================================
 
-reg rst_n;
+    cpu_core #(
+        .PROG_ADDR_WIDTH(PROG_ADDR_WIDTH),
+        .DATA_ADDR_WIDTH(DATA_ADDR_WIDTH),
+        .DATA_WIDTH(DATA_WIDTH),
+        .STACK_LIMIT(STACK_LIMIT)
+    ) dut (
+        .clk        (clk),
+        .rst_n      (rst_n),
 
-initial begin
-    rst_n = 1'b0;
+        .instruction(instruction),
+        .pc         (pc),
 
-    repeat(5)
-        @(posedge clk_150);
+        .rdata      (rdata),
+        .cpu_ready  (cpu_ready),
 
-    rst_n = 1'b1;
-end
+        .cpu_req    (cpu_req),
+        .read_write (read_write),
+        .addr       (addr),
+        .wdata      (wdata)
+    );
 
+    // ============================================================
+    // PROGRAM MEMORY
+    // ============================================================
 
-// ============================================================================
-// CPU SIDE
-// ============================================================================
+    reg [31:0] prog_mem [0:4095];
 
-reg                     cpu_req;
-reg                     read_write;
-reg [ADDR_WIDTH-1:0]    addr;
-reg [DATA_WIDTH-1:0]    wdata;
+    // ============================================================
+    // DATA MEMORY
+    // ============================================================
 
-wire [DATA_WIDTH-1:0]   rdata;
-wire                    cpu_ready;
+    reg [31:0] data_mem [0:16383];
 
+    // ============================================================
+    // VARIABLES
+    // ============================================================
 
-// ============================================================================
-// CACHE <-> REQUEST FIFO
-// ============================================================================
+    integer i;
+    integer failures;
+    integer passed;
 
-wire [ADDR_WIDTH+DATA_WIDTH:0] cache_req_data;
-wire                            cache_req_en;
-wire                            req_fifo_full;
+    reg [31:0] saved_stack_data;
 
+    // ============================================================
+    // CLOCK
+    // ============================================================
 
-// ============================================================================
-// REQUEST FIFO <-> CONTROLLER
-// ============================================================================
+    initial begin
+        clk = 1'b0;
 
-wire [ADDR_WIDTH+DATA_WIDTH:0] req_fifo_rdata;
-wire                            req_fifo_empty;
-wire                            req_fifo_r_en;
+        forever #5 clk = ~clk;
+    end
 
+    // ============================================================
+    // INSTRUCTION MEMORY
+    //
+    // Combinational read.
+    // PC is a WORD address.
+    // ============================================================
 
-// ============================================================================
-// CACHE <-> RESPONSE FIFO
-// ============================================================================
+    always @(*) begin
+        instruction = prog_mem[pc];
+    end
 
-wire [DATA_WIDTH-1:0] response_fifo_rdata;
-wire                  response_fifo_empty;
-wire                  response_fifo_r_en;
+    // ============================================================
+    // DATA MEMORY MODEL
+    //
+    // Supports programmable wait states.
+    // ============================================================
 
+    integer wait_counter;
+    integer wait_cycles;
 
-// ============================================================================
-// CONTROLLER <-> RESPONSE FIFO
-// ============================================================================
+    always @(posedge clk) begin
 
-wire [DATA_WIDTH-1:0] response_fifo_wdata;
-wire                  response_fifo_w_en;
-wire                  response_fifo_full;
-
-
-// ============================================================================
-// CONTROLLER <-> MEMORY
-// ============================================================================
-
-wire [ADDR_WIDTH-1:0] mem_addr;
-wire [DATA_WIDTH-1:0] mem_wdata;
-
-wire mem_read_en;
-wire mem_write_en;
-
-wire [DATA_WIDTH-1:0] mem_rdata;
-wire                  mem_rvalid;
-
-
-// ============================================================================
-// DUT
-// ============================================================================
-
-cache #(
-    .ADDR_WIDTH(ADDR_WIDTH),
-    .DATA_WIDTH(DATA_WIDTH),
-    .CACHE_LINES(CACHE_LINES),
-    .WORDS_PER(WORDS_PER)
-) dut (
-    .clk(clk_150),
-    .rst_n(rst_n),
-
-    .cpu_req(cpu_req),
-    .read_write(read_write),
-    .addr(addr),
-    .wdata(wdata),
-
-    .rdata(rdata),
-    .cpu_ready(cpu_ready),
-
-    .fifo_req_full(req_fifo_full),
-    .fifo_req_data(cache_req_data),
-    .fifo_req_en(cache_req_en),
-
-    .fifo_resp_en(response_fifo_r_en),
-    .fifo_resp_data(response_fifo_rdata),
-    .fifo_resp_empty(response_fifo_empty)
-);
-
-
-async_fifo #(
-    .WIDTH(ADDR_WIDTH + DATA_WIDTH + 1),
-    .DEPTH(FIFO_DEPTH)
-) request_fifo (
-    .rclk(clk_70),
-    .wclk(clk_150),
-
-    .w_rst_n(rst_n),
-    .r_rst_n(rst_n),
-
-    .r_data(req_fifo_rdata),
-    .w_data(cache_req_data),
-
-    .r_en(req_fifo_r_en),
-    .w_en(cache_req_en),
-
-    .full(req_fifo_full),
-    .empty(req_fifo_empty)
-);
-
-
-async_fifo #(
-    .WIDTH(DATA_WIDTH),
-    .DEPTH(FIFO_DEPTH)
-) response_fifo (
-    .rclk(clk_150),
-    .wclk(clk_70),
-
-    .w_rst_n(rst_n),
-    .r_rst_n(rst_n),
-
-    .r_data(response_fifo_rdata),
-    .w_data(response_fifo_wdata),
-
-    .r_en(response_fifo_r_en),
-    .w_en(response_fifo_w_en),
-
-    .full(response_fifo_full),
-    .empty(response_fifo_empty)
-);
-
-
-memory_controller #(
-    .ADDR_WIDTH(ADDR_WIDTH),
-    .DATA_WIDTH(DATA_WIDTH)
-) controller (
-    .clk(clk_70),
-    .rst_n(rst_n),
-
-    .req_data(req_fifo_rdata),
-    .req_empty(req_fifo_empty),
-    .req_en(req_fifo_r_en),
-
-    .resp_data(response_fifo_wdata),
-    .resp_en(response_fifo_w_en),
-    .resp_full(response_fifo_full),
-
-    .mem_addr(mem_addr),
-    .mem_wdata(mem_wdata),
-
-    .mem_read_en(mem_read_en),
-    .mem_write_en(mem_write_en),
-
-    .mem_rdata(mem_rdata),
-    .mem_rvalid(mem_rvalid)
-);
-
-
-data_memory #(
-    .ADDR_WIDTH(ADDR_WIDTH),
-    .DATA_WIDTH(DATA_WIDTH)
-) memory (
-    .clk(clk_70),
-    .rst_n(rst_n),
-
-    .read_en(mem_read_en),
-    .write_en(mem_write_en),
-
-    .addr(mem_addr),
-    .wdata(mem_wdata),
-
-    .rdata(mem_rdata),
-    .rvalid(mem_rvalid)
-);
-
-
-// ============================================================================
-// TEST / SCOREBOARD STATE
-// ============================================================================
-
-integer total_checks;
-integer passed_checks;
-integer failed_checks;
-
-integer cpu_read_count;
-integer cpu_write_count;
-integer cpu_completion_count;
-
-integer memory_read_count;
-integer memory_write_count;
-
-integer protocol_violations;
-integer scoreboard_violations;
-
-reg [DATA_WIDTH-1:0] ref_mem [0:MEM_WORDS-1];
-
-reg monitor_enabled;
-
-
-// ============================================================================
-// CHECK TASK
-// ============================================================================
-
-task check;
-    input condition;
-    input [8*140-1:0] message;
-
-    begin
-        total_checks = total_checks + 1;
-
-        if(condition) begin
-            passed_checks = passed_checks + 1;
-            $display("[PASS] %s", message);
+        if (!rst_n) begin
+            cpu_ready <= 1'b0;
+            rdata     <= 32'b0;
+            wait_counter <= 0;
         end
+
         else begin
-            failed_checks = failed_checks + 1;
-            $display("[FAIL] %s", message);
-        end
-    end
-endtask
 
+            // --------------------------------------------
+            // No request
+            // --------------------------------------------
 
-// ============================================================================
-// INITIALIZE REFERENCE MODEL + REAL MEMORY
-// ============================================================================
-
-task initialize_memory;
-    integer i;
-
-    begin
-        for(i = 0; i < MEM_WORDS; i = i + 1) begin
-            ref_mem[i] = 32'h00000000;
-            memory.mem[i] = 32'h00000000;
-        end
-    end
-endtask
-
-
-task write_known_line;
-    input [ADDR_WIDTH-1:0] base;
-    input [DATA_WIDTH-1:0] d0;
-    input [DATA_WIDTH-1:0] d1;
-    input [DATA_WIDTH-1:0] d2;
-    input [DATA_WIDTH-1:0] d3;
-
-    begin
-        memory.mem[base+0] = d0;
-        memory.mem[base+1] = d1;
-        memory.mem[base+2] = d2;
-        memory.mem[base+3] = d3;
-
-        ref_mem[base+0] = d0;
-        ref_mem[base+1] = d1;
-        ref_mem[base+2] = d2;
-        ref_mem[base+3] = d3;
-    end
-endtask
-
-
-// ============================================================================
-// CPU READ
-// ============================================================================
-
-task cpu_read;
-    input  [ADDR_WIDTH-1:0] read_addr;
-    output [DATA_WIDTH-1:0] read_data;
-
-    integer timeout;
-
-    begin
-        @(negedge clk_150);
-
-        addr       = read_addr;
-        wdata      = 0;
-        read_write = 1'b0;
-        cpu_req    = 1'b1;
-
-        timeout = 0;
-
-        while(!cpu_ready && timeout < 5000) begin
-            @(negedge clk_150);
-            timeout = timeout + 1;
-        end
-
-        check(cpu_ready, "CPU read eventually completed");
-
-        read_data = rdata;
-
-        if(cpu_ready) begin
-            check(
-                read_data === ref_mem[read_addr],
-                "CPU read matches independent architectural reference"
-            );
-        end
-
-        // Count the transaction and its completion separately.  A timeout must
-        // never be counted as a successful completion.
-        cpu_read_count = cpu_read_count + 1;
-        if(cpu_ready)
-            cpu_completion_count = cpu_completion_count + 1;
-
-        cpu_req = 1'b0;
-
-        // Give the DUT one full CPU cycle to leave RESPONSE/IDLE before the
-        // next transaction is launched.
-        @(negedge clk_150);
-    end
-endtask
-
-
-// ============================================================================
-// CPU WRITE
-//
-// Architectural reference is updated immediately because the CPU store has
-// completed from the CPU's perspective. For write-back hits, backing memory
-// intentionally remains stale until eviction.
-// ============================================================================
-
-task cpu_write;
-    input [ADDR_WIDTH-1:0] write_addr;
-    input [DATA_WIDTH-1:0] write_data;
-
-    integer timeout;
-
-    begin
-        @(negedge clk_150);
-
-        addr       = write_addr;
-        wdata      = write_data;
-        read_write = 1'b1;
-        cpu_req    = 1'b1;
-
-        timeout = 0;
-
-        while(!cpu_ready && timeout < 5000) begin
-            @(negedge clk_150);
-            timeout = timeout + 1;
-        end
-
-        check(cpu_ready, "CPU write eventually completed");
-
-        // Count the request regardless of whether it timed out; completion is
-        // counted only when cpu_ready was actually observed.
-        cpu_write_count = cpu_write_count + 1;
-        if(cpu_ready) begin
-            cpu_completion_count = cpu_completion_count + 1;
-            // Architectural state changes at CPU-visible completion.
-            ref_mem[write_addr] = write_data;
-        end
-
-        cpu_req = 1'b0;
-
-        // Allow RESPONSE -> IDLE to settle before the next request.
-        @(negedge clk_150);
-    end
-endtask
-
-
-// ============================================================================
-// MEMORY WRITE SCOREBOARD
-//
-// Every backing-memory write must contain the current architectural value.
-//
-// This catches:
-//   - wrong eviction address
-//   - wrong eviction data
-//   - stale dirty data
-//   - corrupt write-through/write-miss data
-//   - wrong word ordering
-// ============================================================================
-
-always @(posedge clk_70) begin
-    if(rst_n && mem_write_en) begin
-
-        memory_write_count = memory_write_count + 1;
-
-        $display(
-            "[MEM WRITE] t=%0t ADDR=%0d DATA=%h EXPECTED=%h",
-            $time,
-            mem_addr,
-            mem_wdata,
-            ref_mem[mem_addr]
-        );
-
-        if(monitor_enabled) begin
-            if(mem_wdata !== ref_mem[mem_addr]) begin
-                scoreboard_violations = scoreboard_violations + 1;
-
-                $display(
-                    "*** SCOREBOARD ERROR: memory write does not match reference ***"
-                );
+            if (!cpu_req) begin
+                cpu_ready <= 1'b0;
+                rdata     <= 32'b0;
+                wait_counter <= 0;
             end
-        end
-    end
-end
 
+            // --------------------------------------------
+            // Request
+            // --------------------------------------------
 
-// ============================================================================
-// MEMORY READ MONITOR
-// ============================================================================
-
-always @(posedge clk_70) begin
-    if(rst_n && mem_read_en) begin
-        memory_read_count = memory_read_count + 1;
-
-        $display(
-            "[MEM READ] t=%0t ADDR=%0d",
-            $time,
-            mem_addr
-        );
-    end
-end
-
-
-// ============================================================================
-// FIFO SAFETY CHECKS
-//
-// The specification requires:
-//   never write a full FIFO
-//   never read an empty FIFO
-//
-// These are monitored continuously at the appropriate clock edges.
-// ============================================================================
-
-always @(posedge clk_150) begin
-    if(rst_n) begin
-
-        if(cache_req_en && req_fifo_full) begin
-            protocol_violations = protocol_violations + 1;
-
-            $display(
-                "*** FIFO ERROR: request FIFO write while FULL t=%0t ***",
-                $time
-            );
-        end
-
-        if(response_fifo_r_en && response_fifo_empty) begin
-            protocol_violations = protocol_violations + 1;
-
-            $display(
-                "*** FIFO ERROR: response FIFO read while EMPTY t=%0t ***",
-                $time
-            );
-        end
-    end
-end
-
-
-always @(posedge clk_70) begin
-    if(rst_n) begin
-
-        if(req_fifo_r_en && req_fifo_empty) begin
-            protocol_violations = protocol_violations + 1;
-
-            $display(
-                "*** FIFO ERROR: request FIFO read while EMPTY t=%0t ***",
-                $time
-            );
-        end
-
-        if(response_fifo_w_en && response_fifo_full) begin
-            protocol_violations = protocol_violations + 1;
-
-            $display(
-                "*** FIFO ERROR: response FIFO write while FULL t=%0t ***",
-                $time
-            );
-        end
-    end
-end
-
-
-// ============================================================================
-// CACHE REQUEST FORMAT CHECK
-//
-// Requests crossing from cache to controller must carry:
-//   RW + address + write data
-//
-// Read requests should not accidentally carry write intent.
-// ============================================================================
-
-always @(posedge clk_150) begin
-    if(rst_n && cache_req_en) begin
-
-        $display(
-            "[CACHE -> REQ FIFO] t=%0t RW=%b ADDR=%0d DATA=%h",
-            $time,
-            cache_req_data[ADDR_WIDTH+DATA_WIDTH],
-            cache_req_data[ADDR_WIDTH+DATA_WIDTH-1:DATA_WIDTH],
-            cache_req_data[DATA_WIDTH-1:0]
-        );
-
-    end
-end
-
-
-// ============================================================================
-// RESET CHECK
-// ============================================================================
-
-task reset_check;
-
-    begin
-        $display("");
-        $display("==================================================");
-        $display("RESET CHECK");
-        $display("==================================================");
-
-        while(!rst_n)
-            @(posedge clk_150);
-
-        repeat(5)
-            @(posedge clk_150);
-
-        check(req_fifo_empty,
-              "Request FIFO empty after reset");
-
-        check(response_fifo_empty,
-              "Response FIFO empty after reset");
-
-        check(dut.present_state == 3'd0,
-              "Cache returned to IDLE after reset");
-
-        check(controller.present_state == 3'd0,
-              "Controller returned to IDLE after reset");
-    end
-endtask
-
-
-// ============================================================================
-// DIRECTED TEST 1
-// WRITE MISS / NO-WRITE-ALLOCATE
-// ============================================================================
-
-task test_write_miss;
-
-    begin
-        $display("");
-        $display("==================================================");
-        $display("DIRECTED 1: WRITE MISS / NO-WRITE-ALLOCATE");
-        $display("==================================================");
-
-        cpu_write(
-            14'd1000,
-            32'hDEADBEEF
-        );
-
-        // Backing memory must eventually contain the store.
-        wait_for_quiet(100);
-
-        check(
-            memory.mem[1000] === 32'hDEADBEEF,
-            "Write miss reached backing memory"
-        );
-
-        // Address decomposition for ADDR_WIDTH=14, WORDS_PER=4,
-        // CACHE_LINES=8:
-        //   offset = addr[1:0]
-        //   index  = addr[4:2]
-        //   tag    = addr[13:5]
-        // For address 1000: index=2, tag=31.
-        // The old check used (1000 >> 5) as an array index (31), which is
-        // outside valid_array/tag_array[0:7] and made the TB fail for the
-        // wrong reason.
-        check(
-            !(dut.valid_array[(1000 >> OFFSET_BITS) & (CACHE_LINES-1)] &&
-              dut.tag_array[(1000 >> OFFSET_BITS) & (CACHE_LINES-1)] ==
-              (1000 >> (OFFSET_BITS + INDEX_BITS))),
-            "Write miss did not allocate matching cache line"
-        );
-    end
-endtask
-
-
-// ============================================================================
-// DIRECTED TEST 2
-// READ MISS / REFILL
-// ============================================================================
-
-task test_refill;
-
-    reg [DATA_WIDTH-1:0] rd;
-
-    begin
-        $display("");
-        $display("==================================================");
-        $display("DIRECTED 2: READ MISS / FOUR-WORD REFILL");
-        $display("==================================================");
-
-        write_known_line(
-            14'd100,
-            32'h11111111,
-            32'h22222222,
-            32'h33333333,
-            32'h44444444
-        );
-
-        cpu_read(14'd100, rd);
-        cpu_read(14'd101, rd);
-        cpu_read(14'd102, rd);
-        cpu_read(14'd103, rd);
-
-        check(
-            dut.valid_array[1] == 1'b1,
-            "Refilled cache line is valid"
-        );
-
-        check(
-            dut.data_array[1][0] === 32'h11111111,
-            "Refill word 0 correct"
-        );
-
-        check(
-            dut.data_array[1][1] === 32'h22222222,
-            "Refill word 1 correct"
-        );
-
-        check(
-            dut.data_array[1][2] === 32'h33333333,
-            "Refill word 2 correct"
-        );
-
-        check(
-            dut.data_array[1][3] === 32'h44444444,
-            "Refill word 3 correct"
-        );
-    end
-endtask
-
-
-// ============================================================================
-// DIRECTED TEST 3
-// DIRTY EVICTION
-// ============================================================================
-
-task test_dirty_eviction;
-
-    reg [DATA_WIDTH-1:0] rd;
-
-    begin
-        $display("");
-        $display("==================================================");
-        $display("DIRECTED 3: DIRTY EVICTION / WRITE-BACK");
-        $display("==================================================");
-
-        // Address 800 maps to index 0 for an 8-line / 4-word-line cache.
-        write_known_line(
-            14'd800,
-            32'h80000000,
-            32'h80000001,
-            32'h80000002,
-            32'h80000003
-        );
-
-        // Bring line into cache.
-        cpu_read(14'd800, rd);
-
-        // Modify only one word. Backing memory should remain old.
-        cpu_write(
-            14'd801,
-            32'hDEADC0DE
-        );
-
-        check(
-            memory.mem[801] === 32'h80000001,
-            "Write-back hit left backing memory stale before eviction"
-        );
-
-        // 1056 = 800 + 256. Same index, different tag.
-        write_known_line(
-            14'd1056,
-            32'h10560000,
-            32'h10560001,
-            32'h10560002,
-            32'h10560003
-        );
-
-        cpu_read(14'd1056, rd);
-
-        // The dirty line must now be fully written back.
-        wait_for_quiet(200);
-
-        check(
-            memory.mem[800] === 32'h80000000,
-            "Dirty eviction preserved word 0"
-        );
-
-        check(
-            memory.mem[801] === 32'hDEADC0DE,
-            "Dirty eviction wrote modified word 1"
-        );
-
-        check(
-            memory.mem[802] === 32'h80000002,
-            "Dirty eviction preserved word 2"
-        );
-
-        check(
-            memory.mem[803] === 32'h80000003,
-            "Dirty eviction preserved word 3"
-        );
-
-        check(
-            memory.mem[1056] === 32'h10560000,
-            "Replacement line word 0 correct"
-        );
-
-        check(
-            memory.mem[1059] === 32'h10560003,
-            "Replacement line word 3 correct"
-        );
-    end
-endtask
-
-
-// ============================================================================
-// DIRECTED TEST 4
-// CLEAN EVICTION
-// ============================================================================
-
-task test_clean_eviction;
-
-    reg [DATA_WIDTH-1:0] rd;
-    integer writes_before;
-
-    begin
-        $display("");
-        $display("==================================================");
-        $display("DIRECTED 4: CLEAN EVICTION");
-        $display("==================================================");
-
-        write_known_line(
-            14'd1200,
-            32'h12000000,
-            32'h12000001,
-            32'h12000002,
-            32'h12000003
-        );
-
-        cpu_read(14'd1200, rd);
-
-        writes_before = memory_write_count;
-
-        // 1456 = 1200 + 256, same index/different tag.
-        write_known_line(
-            14'd1456,
-            32'h14560000,
-            32'h14560001,
-            32'h14560002,
-            32'h14560003
-        );
-
-        cpu_read(14'd1456, rd);
-
-        wait_for_quiet(150);
-
-        check(
-            memory_write_count == writes_before,
-            "Clean eviction generated no write-back"
-        );
-    end
-endtask
-
-
-// ============================================================================
-// DIRECTED TEST 5
-// SAME INDEX / MANY TAGS
-// ============================================================================
-
-task test_collision_stress;
-
-    integer k;
-    reg [DATA_WIDTH-1:0] rd;
-    integer base;
-
-    begin
-        $display("");
-        $display("==================================================");
-        $display("DIRECTED 5: SAME INDEX / MANY TAG COLLISIONS");
-        $display("==================================================");
-
-        // All addresses are separated by 32 words and therefore target
-        // repeated cache indices with different tags.
-        for(k = 0; k < 12; k = k + 1) begin
-
-            base = 32 * k;
-
-            write_known_line(
-                base,
-                32'hA0000000 + k,
-                32'hA1000000 + k,
-                32'hA2000000 + k,
-                32'hA3000000 + k
-            );
-
-            cpu_read(base, rd);
-
-            check(
-                rd === ref_mem[base],
-                "Collision stress returned expected word"
-            );
-
-            // Dirty a different word every iteration.
-            cpu_write(
-                base + 1,
-                32'hD0000000 + k
-            );
-
-            cpu_read(base + 1, rd);
-
-            check(
-                rd === (32'hD0000000 + k),
-                "Dirty collision word reads back correctly"
-            );
-        end
-    end
-endtask
-
-
-// ============================================================================
-// RANDOM TEST
-// ============================================================================
-
-task randomized_test;
-
-    integer k;
-    integer op;
-    integer r;
-    integer a;
-    reg [ADDR_WIDTH-1:0] ra;
-    reg [DATA_WIDTH-1:0] rd;
-    reg [DATA_WIDTH-1:0] wd;
-
-    begin
-        $display("");
-        $display("==================================================");
-        $display("RANDOMIZED ARCHITECTURAL TEST");
-        $display("==================================================");
-
-        // Deterministic seed so failures can be reproduced.
-        r = 32'h5A17C0DE;
-
-        for(k = 0; k < 300; k = k + 1) begin
-
-            op = $random(r);
-
-            if(op < 0)
-                op = -op;
-
-            op = op % 100;
-
-            // Deliberately bias a portion of traffic toward cache collisions.
-            if((k % 5) == 0) begin
-                a = ((k / 5) % 8) * 32;
-                a = a + ((k / 7) % 4);
-            end
             else begin
-                a = $random(r);
 
-                if(a < 0)
-                    a = -a;
+                if (wait_counter < wait_cycles) begin
+                    wait_counter <= wait_counter + 1;
+                    cpu_ready <= 1'b0;
+                end
 
-                a = a % MEM_WORDS;
-            end
+                else begin
 
-            ra = a[ADDR_WIDTH-1:0];
+                    cpu_ready <= 1'b1;
 
-            wd = $random(r);
+                    if (read_write) begin
 
-            if(op < 55) begin
-                cpu_read(ra, rd);
-            end
-            else begin
-                cpu_write(ra, wd);
-            end
+                        data_mem[addr] <= wdata;
 
-            // Periodically force the transaction stream to settle.
-            if((k % 25) == 24)
-                wait_for_quiet(100);
-        end
+                        $display(
+                            "[MEM WRITE] t=%0t addr=0x%04h data=0x%08h",
+                            $time,
+                            addr,
+                            wdata
+                        );
 
-        $display(
-            "[RANDOM] Reads=%0d Writes=%0d CPU completions=%0d",
-            cpu_read_count,
-            cpu_write_count,
-            cpu_completion_count
-        );
-    end
-endtask
+                    end
 
+                    else begin
 
-// ============================================================================
-// BOUNDARY TEST
-// ============================================================================
+                        rdata <= data_mem[addr];
 
-task boundary_test;
+                        $display(
+                            "[MEM READ ] t=%0t addr=0x%04h data=0x%08h",
+                            $time,
+                            addr,
+                            data_mem[addr]
+                        );
 
-    reg [DATA_WIDTH-1:0] rd;
+                    end
 
-    begin
-        $display("");
-        $display("==================================================");
-        $display("BOUNDARY ADDRESS TEST");
-        $display("==================================================");
-
-        write_known_line(
-            14'd0,
-            32'hCAFEBABE,
-            32'h00000001,
-            32'h00000002,
-            32'h00000003
-        );
-
-        cpu_read(14'd0, rd);
-        cpu_read(14'd3, rd);
-
-        write_known_line(
-            14'd16380,
-            32'h10000000,
-            32'h20000000,
-            32'h30000000,
-            32'hFACEFACE
-        );
-
-        cpu_read(14'd16380, rd);
-        cpu_read(14'd16381, rd);
-        cpu_read(14'd16382, rd);
-        cpu_read(14'd16383, rd);
-
-        check(
-            rd === 32'hFACEFACE,
-            "Highest legal memory address returned correctly"
-        );
-    end
-endtask
-
-
-// ============================================================================
-// QUIET WAIT
-// ============================================================================
-
-task wait_for_quiet;
-    input integer cycles;
-
-    integer i;
-
-    begin
-        for(i = 0; i < cycles; i = i + 1)
-            @(posedge clk_150);
-    end
-endtask
-
-
-// ============================================================================
-// DRAIN ALL DIRTY CACHE LINES
-//
-// A write-back cache may legally retain dirty data after the last CPU
-// transaction. Waiting alone cannot make backing memory equal the reference
-// model.  Force an eviction for every currently dirty line by issuing a read
-// to a different tag with the same index.  Repeat because an eviction can
-// expose another dirty line at that index.
-// ============================================================================
-task drain_dirty_lines;
-    integer pass;
-    integer idx;
-    integer victim_tag;
-    integer alt_tag;
-    reg [ADDR_WIDTH-1:0] victim_addr;
-    reg [ADDR_WIDTH-1:0] conflict_addr;
-    reg [DATA_WIDTH-1:0] rd;
-    reg found_dirty;
-
-    begin
-        $display("");
-        $display("==================================================");
-        $display("DRAINING DIRTY CACHE LINES");
-        $display("==================================================");
-
-        // At most CACHE_LINES+2 passes are needed for the small direct-mapped
-        // cache used by this TB. Extra passes make the procedure robust to
-        // replacement chains.
-        for(pass = 0; pass < (CACHE_LINES + 2); pass = pass + 1) begin
-            found_dirty = 1'b0;
-
-            for(idx = 0; idx < CACHE_LINES; idx = idx + 1) begin
-                if(dut.valid_array[idx] && dut.dirty_bit_array[idx]) begin
-                    found_dirty = 1'b1;
-
-                    victim_tag = dut.tag_array[idx];
-                    victim_addr = (victim_tag << (INDEX_BITS + OFFSET_BITS)) |
-                                  (idx << OFFSET_BITS);
-
-                    // Select a different tag while preserving the index.
-                    alt_tag = 0;
-                    if(alt_tag == victim_tag)
-                        alt_tag = 1;
-                    if(alt_tag == victim_tag)
-                        alt_tag = 2;
-
-                    conflict_addr = (alt_tag << (INDEX_BITS + OFFSET_BITS)) |
-                                    (idx << OFFSET_BITS);
-
-                    cpu_read(conflict_addr, rd);
                 end
             end
-
-            wait_for_quiet(50);
-
-            if(!found_dirty)
-                pass = CACHE_LINES + 2;
-        end
-
-        wait_for_quiet(200);
-
-        for(idx = 0; idx < CACHE_LINES; idx = idx + 1) begin
-            check(
-                !(dut.valid_array[idx] && dut.dirty_bit_array[idx]),
-                "No dirty cache line remains after final drain"
-            );
         end
     end
-endtask
 
+    // ============================================================
+    // DEBUG MONITOR
+    // ============================================================
 
-// ============================================================================
-// FINAL BACKING MEMORY CHECK
-//
-// For a write-back cache, all dirty state must be drained before this check.
-// ============================================================================
+    always @(posedge clk) begin
 
-task final_memory_check;
+        if (rst_n) begin
 
-    integer i;
+            $display(
+                "[CPU] t=%0t PC=%0d instr=0x%08h req=%b wr=%b addr=0x%04h wdata=0x%08h ready=%b",
+                $time,
+                pc,
+                instruction,
+                cpu_req,
+                read_write,
+                addr,
+                wdata,
+                cpu_ready
+            );
+
+        end
+
+    end
+
+    // ============================================================
+    // RESET TASK
+    // ============================================================
+
+    task reset_cpu;
+    begin
+
+        rst_n = 1'b0;
+
+        cpu_ready = 1'b0;
+        rdata = 32'b0;
+
+        wait_cycles = 0;
+        wait_counter = 0;
+
+        repeat (3)
+            @(posedge clk);
+
+        rst_n = 1'b1;
+
+        @(posedge clk);
+
+        $display("");
+        $display("====================================================");
+        $display(" RESET RELEASED");
+        $display("====================================================");
+        $display("");
+
+    end
+    endtask
+
+    // ============================================================
+    // CLEAR MEMORIES
+    // ============================================================
+
+    task clear_memories;
+        integer j;
+    begin
+
+        for (j = 0; j < 4096; j = j + 1)
+            prog_mem[j] = 32'h00000000;
+
+        for (j = 0; j < 16384; j = j + 1)
+            data_mem[j] = 32'h00000000;
+
+    end
+    endtask
+
+    // ============================================================
+    // ENCODING TASKS
+    //
+    // We intentionally use TASKS rather than zero-port functions.
+    // This keeps the TB compatible with Icarus.
+    // ============================================================
+
+    task set_nop;
+    begin
+        prog_mem[0] = 32'h00000000;
+    end
+    endtask
+
+    task put_call;
+        input integer address;
+        input integer target;
+    begin
+        prog_mem[address] =
+            {8'h27, 4'h0, 4'h0, 4'h0, target[11:0]};
+    end
+    endtask
+
+    task put_ret;
+        input integer address;
+    begin
+        prog_mem[address] =
+            {8'h28, 24'h000000};
+    end
+    endtask
+
+    task put_halt;
+        input integer address;
+    begin
+        prog_mem[address] =
+            {8'hFF, 24'h000000};
+    end
+    endtask
+
+    task put_load_imm;
+        input integer address;
+        input integer rd_num;
+        input integer immediate;
+    begin
+        prog_mem[address] =
+            {8'h03, rd_num[3:0], 4'h0, 4'h0, immediate[11:0]};
+    end
+    endtask
+
+    // ============================================================
+    // WAIT UNTIL CALL WRITE OCCURS
+    // ============================================================
+
+    task wait_for_call_write;
+        input [11:0] expected_call_pc;
+        input [11:0] expected_return_pc;
+
+        integer timeout;
+    begin
+
+        timeout = 0;
+
+        while (timeout < 1000) begin
+
+            @(posedge clk);
+
+            if (cpu_req &&
+                read_write &&
+                (addr == STACK_START)) begin
+
+                $display("");
+                $display("----------------------------------------------------");
+                $display(" CALL TRANSACTION");
+                $display("----------------------------------------------------");
+                $display("CALL PC              = %0d", expected_call_pc);
+                $display("Current CPU PC       = %0d", pc);
+                $display("Expected return PC   = %0d", expected_return_pc);
+                $display("Stack address        = 0x%04h", addr);
+                $display("CALL wdata            = 0x%08h", wdata);
+                $display("CPU ready             = %b", cpu_ready);
+
+                if (wdata !== expected_return_pc) begin
+
+                    $display("*** FAIL: CALL did not save PC + 1 ***");
+                    $display("Expected: 0x%08h", expected_return_pc);
+                    $display("Actual  : 0x%08h", wdata);
+
+                    failures = failures + 1;
+
+                end
+                else begin
+
+                    $display("*** PASS: CALL saved PC + 1 ***");
+
+                    passed = passed + 1;
+
+                end
+
+                $display("----------------------------------------------------");
+                $display("");
+
+                disable wait_for_call_write;
+
+            end
+
+            timeout = timeout + 1;
+
+        end
+
+        $display("*** ERROR: CALL transaction timeout ***");
+
+        failures = failures + 1;
+
+    end
+    endtask
+
+    // ============================================================
+    // TEST 1
+    //
+    // BASIC CALL / RET
+    //
+    // PC 1: CALL 4
+    // PC 2: instruction after CALL
+    // PC 3: HALT
+    //
+    // PC 4: RET
+    //
+    // Expected:
+    //
+    // CALL at 1
+    // saved return address = 2
+    // target = 4
+    //
+    // RET:
+    // returns to 2
+    // ============================================================
+
+    task test_basic_call_ret;
+
+        integer timeout;
 
     begin
+
         $display("");
-        $display("==================================================");
-        $display("FINAL BACKING MEMORY CONSISTENCY CHECK");
-        $display("==================================================");
+        $display("====================================================");
+        $display(" TEST 1: BASIC CALL / RET");
+        $display("====================================================");
 
-        // First force all remaining dirty cache lines to backing memory.
-        drain_dirty_lines();
-        wait_for_quiet(500);
+        clear_memories;
 
-        for(i = 0; i < MEM_WORDS; i = i + 1) begin
-            if(memory.mem[i] !== ref_mem[i]) begin
-                failed_checks = failed_checks + 1;
+        // PC 0
+        prog_mem[0] = 32'h00000000;
 
-                $display(
-                    "[FAIL] FINAL MEMORY MISMATCH ADDR=%0d MEM=%h REF=%h",
-                    i,
-                    memory.mem[i],
-                    ref_mem[i]
-                );
-            end
+        // PC 1
+        put_call(1, 4);
+
+        // PC 2
+        put_load_imm(2, 1, 12'h123);
+
+        // PC 3
+        put_halt(3);
+
+        // PC 4
+        put_ret(4);
+
+        reset_cpu;
+
+        // Wait for CALL write
+        wait_for_call_write(1, 2);
+
+        // Wait until CALL reaches target 4
+        timeout = 0;
+
+        while ((pc !== 12'd4) && (timeout < 1000)) begin
+            @(posedge clk);
+            timeout = timeout + 1;
         end
 
-        check(
-            req_fifo_empty,
-            "Request FIFO empty at final quiescence"
-        );
+        if (pc !== 12'd4) begin
 
-        check(
-            response_fifo_empty,
-            "Response FIFO empty at final quiescence"
-        );
+            $display("*** FAIL: CALL target incorrect ***");
+            $display("Expected PC = 4");
+            $display("Actual PC   = %0d", pc);
 
-        check(
-            dut.present_state == 3'd0,
-            "Cache returned to IDLE"
-        );
+            failures = failures + 1;
 
-        check(
-            controller.present_state == 3'd0,
-            "Controller returned to IDLE"
-        );
+        end
+        else begin
 
-        check(
-            protocol_violations == 0,
-            "No FIFO protocol violations detected"
-        );
+            $display("*** PASS: CALL target = 4 ***");
 
-        check(
-            scoreboard_violations == 0,
-            "No illegal/corrupt backing-memory writes detected"
-        );
+            passed = passed + 1;
 
-        check(
-            cpu_completion_count == (cpu_read_count + cpu_write_count),
-            "Every CPU transaction received exactly one completion"
-        );
+        end
+
+        // Wait until RET has requested the saved address
+        timeout = 0;
+
+        while (!((cpu_req === 1'b1) &&
+                  (read_write === 1'b0) &&
+                  (addr === STACK_START)) &&
+               timeout < 1000) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (timeout >= 1000) begin
+
+            $display("*** FAIL: RET memory request timeout ***");
+
+            failures = failures + 1;
+
+        end
+
+        // Wait for returned PC = 2
+        timeout = 0;
+
+        while ((pc !== 12'd2) && (timeout < 1000)) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (pc !== 12'd2) begin
+
+            $display("*** FAIL: RET returned to wrong PC ***");
+            $display("Expected PC = 2");
+            $display("Actual PC   = %0d", pc);
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display("*** PASS: RET returned to PC 2 ***");
+
+            passed = passed + 1;
+
+        end
+
+        $display("*** TEST 1 COMPLETE ***");
+
     end
-endtask
+    endtask
 
+    // ============================================================
+    // TEST 2
+    //
+    // MULTIPLE CALL TARGETS
+    //
+    // Ensures CALL target is independent from return address.
+    // ============================================================
 
-// ============================================================================
-// MAIN
-// ============================================================================
+    task test_multiple_targets;
 
-initial begin
+        integer target;
+        integer timeout;
 
-    cpu_req    = 1'b0;
-    read_write = 1'b0;
-    addr       = 0;
-    wdata      = 0;
+    begin
 
-    total_checks = 0;
-    passed_checks = 0;
-    failed_checks = 0;
+        $display("");
+        $display("====================================================");
+        $display(" TEST 2: MULTIPLE CALL TARGETS");
+        $display("====================================================");
 
-    cpu_read_count = 0;
-    cpu_write_count = 0;
-    cpu_completion_count = 0;
+        for (target = 16; target <= 256; target = target * 2) begin
 
-    memory_read_count = 0;
-    memory_write_count = 0;
+            clear_memories;
 
-    protocol_violations = 0;
-    scoreboard_violations = 0;
+            // CALL from PC 1
+            put_call(1, target);
 
-    monitor_enabled = 1'b0;
+            // instruction after CALL
+            put_load_imm(2, 1, target);
 
-    initialize_memory();
+            // halt
+            put_halt(3);
 
-    $display("");
-    $display("==================================================");
-    $display("CPU LITE HARD VERIFICATION TESTBENCH");
-    $display("WRITE-BACK + NO-WRITE-ALLOCATE");
-    $display("==================================================");
+            // target
+            put_ret(target);
 
-    reset_check();
+            reset_cpu;
 
-    // Do not enable the backing-memory scoreboard until initialization is done.
-    monitor_enabled = 1'b1;
+            // Wait for stack write
+            timeout = 0;
 
-    test_write_miss();
+            while (!((cpu_req === 1'b1) &&
+                      (read_write === 1'b1) &&
+                      (addr === STACK_START)) &&
+                   timeout < 1000) begin
 
-    test_refill();
+                @(posedge clk);
+                timeout = timeout + 1;
 
-    test_dirty_eviction();
+            end
 
-    test_clean_eviction();
+            if (timeout >= 1000) begin
 
-    test_collision_stress();
+                $display("*** FAIL: CALL timeout target %0d ***", target);
 
-    boundary_test();
+                failures = failures + 1;
 
-    randomized_test();
+            end
 
-    final_memory_check();
+            else if (wdata !== 32'd2) begin
 
-    $display("");
-    $display("==================================================");
-    $display("FINAL RESULTS");
-    $display("==================================================");
+                $display("*** FAIL: Target %0d saved return %0d instead of 2 ***",
+                         target,
+                         wdata);
 
-    $display("Total checks          : %0d", total_checks);
-    $display("Passed                : %0d", passed_checks);
-    $display("Failed                : %0d", failed_checks);
+                failures = failures + 1;
 
-    $display("CPU reads             : %0d", cpu_read_count);
-    $display("CPU writes            : %0d", cpu_write_count);
-    $display("CPU completions       : %0d", cpu_completion_count);
+            end
 
-    $display("Memory reads          : %0d", memory_read_count);
-    $display("Memory writes         : %0d", memory_write_count);
+            else begin
 
-    $display("FIFO protocol errors  : %0d", protocol_violations);
-    $display("Scoreboard errors     : %0d", scoreboard_violations);
+                $display(
+                    "*** PASS: target=%0d return_address=%0d ***",
+                    target,
+                    wdata
+                );
 
-    if(failed_checks == 0 &&
-       protocol_violations == 0 &&
-       scoreboard_violations == 0) begin
+                passed = passed + 1;
 
-        $display("*** HARD VERIFICATION PASSED ***");
+            end
+
+            // Wait for target
+            timeout = 0;
+
+            while ((pc !== target[11:0]) && (timeout < 1000)) begin
+
+                @(posedge clk);
+                timeout = timeout + 1;
+
+            end
+
+            if (pc !== target[11:0]) begin
+
+                $display(
+                    "*** FAIL: CALL target expected %0d got %0d ***",
+                    target,
+                    pc
+                );
+
+                failures = failures + 1;
+
+            end
+
+        end
+
+        $display("*** TEST 2 COMPLETE ***");
+
     end
-    else begin
-        $display("*** HARD VERIFICATION FAILED ***");
+    endtask
+
+    // ============================================================
+    // TEST 3
+    //
+    // NESTED CALLS
+    //
+    // PC 1  : CALL 8
+    // PC 2  : after outer CALL
+    //
+    // PC 8  : CALL 12
+    // PC 9  : after inner CALL
+    //
+    // PC 12 : RET
+    //
+    // Expected stack:
+    //
+    // 0x3FFF = 2
+    // 0x3FFE = 9
+    //
+    // Inner RET -> 9
+    // Outer RET -> 2
+    // ============================================================
+
+    task test_nested_calls;
+
+        integer timeout;
+
+    begin
+
+        $display("");
+        $display("====================================================");
+        $display(" TEST 3: NESTED CALLS");
+        $display("====================================================");
+
+        clear_memories;
+
+        put_call(1, 8);
+        put_halt(2);
+
+        put_call(8, 12);
+        put_halt(9);
+
+        put_ret(12);
+
+        reset_cpu;
+
+        // --------------------------------------------------------
+        // Outer CALL
+        // --------------------------------------------------------
+
+        timeout = 0;
+
+        while (!((cpu_req === 1'b1) &&
+                  (read_write === 1'b1) &&
+                  (addr === STACK_START)) &&
+               timeout < 1000) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (wdata !== 32'd2) begin
+
+            $display("*** FAIL: Outer CALL saved %0d, expected 2 ***",
+                     wdata);
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display("*** PASS: Outer CALL saved 2 ***");
+
+            passed = passed + 1;
+
+        end
+
+        // --------------------------------------------------------
+        // Wait for inner CALL transaction
+        // --------------------------------------------------------
+
+        timeout = 0;
+
+        while (!((cpu_req === 1'b1) &&
+                  (read_write === 1'b1) &&
+                  (addr === STACK_START - 1)) &&
+               timeout < 1000) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (wdata !== 32'd9) begin
+
+            $display("*** FAIL: Inner CALL saved %0d, expected 9 ***",
+                     wdata);
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display("*** PASS: Inner CALL saved 9 ***");
+
+            passed = passed + 1;
+
+        end
+
+        // --------------------------------------------------------
+        // Wait for inner RET
+        // --------------------------------------------------------
+
+        timeout = 0;
+
+        while ((pc !== 12'd9) && (timeout < 1000)) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (pc !== 12'd9) begin
+
+            $display("*** FAIL: Inner RET returned to %0d, expected 9 ***",
+                     pc);
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display("*** PASS: Inner RET returned to 9 ***");
+
+            passed = passed + 1;
+
+        end
+
+        // --------------------------------------------------------
+        // After inner RET, execute another RET
+        // --------------------------------------------------------
+
+        prog_mem[9] = {8'h28, 24'h000000};
+
+        timeout = 0;
+
+        while ((pc !== 12'd2) && (timeout < 1000)) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (pc !== 12'd2) begin
+
+            $display("*** FAIL: Outer RET returned to %0d, expected 2 ***",
+                     pc);
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display("*** PASS: Outer RET returned to 2 ***");
+
+            passed = passed + 1;
+
+        end
+
+        $display("*** TEST 3 COMPLETE ***");
+
     end
+    endtask
 
-    $display("==================================================");
+    // ============================================================
+    // TEST 4
+    //
+    // DEEP NESTING
+    //
+    // 16 nested CALLs.
+    //
+    // This verifies:
+    //   SP decrement
+    //   correct stack address
+    //   correct return PC
+    //   LIFO ordering
+    // ============================================================
 
-    #100;
-    $finish;
-end
+    task test_deep_nesting;
+
+        integer depth;
+        integer base;
+        integer target;
+        integer expected_return;
+        integer timeout;
+        integer expected_addr;
+
+    begin
+
+        $display("");
+        $display("====================================================");
+        $display(" TEST 4: DEEP NESTING");
+        $display("====================================================");
+
+        clear_memories;
+
+        base = 10;
+
+        // --------------------------------------------------------
+        // Create chain:
+        //
+        // 1 -> 10
+        // 10 -> 20
+        // 20 -> 30
+        // ...
+        //
+        // Each CALL's return address is target_location + 1
+        // --------------------------------------------------------
+
+        put_call(1, base);
+
+        for (depth = 0; depth < 15; depth = depth + 1) begin
+
+            target = base + depth * 10;
+
+            put_call(
+                target,
+                target + 10
+            );
+
+        end
+
+        // Final target returns
+        put_ret(base + 150);
+
+        reset_cpu;
+
+        // --------------------------------------------------------
+        // Verify every CALL stack write
+        // --------------------------------------------------------
+
+        for (depth = 0; depth < 16; depth = depth + 1) begin
+
+            expected_addr = STACK_START - depth;
+
+            timeout = 0;
+
+            while (!((cpu_req === 1'b1) &&
+                      (read_write === 1'b1) &&
+                      (addr === expected_addr[13:0])) &&
+                   timeout < 1000) begin
+
+                @(posedge clk);
+                timeout = timeout + 1;
+
+            end
+
+            if (timeout >= 1000) begin
+
+                $display(
+                    "*** FAIL: Missing CALL at depth %0d ***",
+                    depth
+                );
+
+                failures = failures + 1;
+
+            end
+            else begin
+
+                $display(
+                    "Depth %0d: stack=0x%04h saved=0x%08h",
+                    depth,
+                    addr,
+                    wdata
+                );
+
+                expected_return = 2;
+
+                if (depth > 0)
+                    expected_return =
+                        base + (depth - 1) * 10 + 1;
+
+                if (wdata !== expected_return) begin
+
+                    $display(
+                        "*** FAIL: depth %0d expected return %0d got %0d ***",
+                        depth,
+                        expected_return,
+                        wdata
+                    );
+
+                    failures = failures + 1;
+
+                end
+                else begin
+
+                    passed = passed + 1;
+
+                end
+
+            end
+
+            @(posedge clk);
+
+        end
+
+        $display("*** TEST 4 COMPLETE ***");
+
+    end
+    endtask
+
+    // ============================================================
+    // TEST 5
+    //
+    // REPEATED CALL / RET
+    //
+    // Repeatedly exercises the same stack location.
+    // ============================================================
+
+    task test_repeated_call_ret;
+
+        integer iteration;
+        integer timeout;
+
+    begin
+
+        $display("");
+        $display("====================================================");
+        $display(" TEST 5: REPEATED CALL / RET");
+        $display("====================================================");
+
+        for (iteration = 0; iteration < 20; iteration = iteration + 1) begin
+
+            clear_memories;
+
+            put_call(1, 4);
+            put_halt(2);
+
+            put_ret(4);
+
+            reset_cpu;
+
+            // CALL
+            timeout = 0;
+
+            while (!((cpu_req === 1'b1) &&
+                      (read_write === 1'b1) &&
+                      (addr === STACK_START)) &&
+                   timeout < 1000) begin
+
+                @(posedge clk);
+                timeout = timeout + 1;
+
+            end
+
+            if (wdata !== 32'd2) begin
+
+                $display(
+                    "Iteration %0d FAIL: saved %0d expected 2",
+                    iteration,
+                    wdata
+                );
+
+                failures = failures + 1;
+
+            end
+
+            // Wait for RET result
+            timeout = 0;
+
+            while ((pc !== 12'd2) && (timeout < 1000)) begin
+
+                @(posedge clk);
+                timeout = timeout + 1;
+
+            end
+
+            if (pc !== 12'd2) begin
+
+                $display(
+                    "Iteration %0d FAIL: returned PC=%0d",
+                    iteration,
+                    pc
+                );
+
+                failures = failures + 1;
+
+            end
+            else begin
+
+                $display(
+                    "Iteration %0d PASS",
+                    iteration
+                );
+
+                passed = passed + 1;
+
+            end
+
+        end
+
+        $display("*** TEST 5 COMPLETE ***");
+
+    end
+    endtask
+
+    // ============================================================
+    // TEST 6
+    //
+    // STACK ADDRESS MOVEMENT
+    //
+    // Two CALLs:
+    //
+    // first:
+    //   0x3FFF -> return 2
+    //
+    // second:
+    //   0x3FFE -> return 11
+    //
+    // RET:
+    //   0x3FFE -> 11
+    //   0x3FFF -> 2
+    // ============================================================
+
+    task test_stack_movement;
+
+        integer timeout;
+
+    begin
+
+        $display("");
+        $display("====================================================");
+        $display(" TEST 6: STACK ADDRESS MOVEMENT");
+        $display("====================================================");
+
+        clear_memories;
+
+        put_call(1, 10);
+        put_halt(2);
+
+        put_call(10, 20);
+        put_halt(11);
+
+        put_ret(20);
+
+        reset_cpu;
+
+        // First CALL
+        timeout = 0;
+
+        while (!((cpu_req === 1'b1) &&
+                  (read_write === 1'b1) &&
+                  (addr === STACK_START)) &&
+               timeout < 1000) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (wdata !== 32'd2) begin
+
+            $display("*** FAIL: First CALL return address ***");
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display(
+                "First CALL: addr=0x%04h return=%0d",
+                addr,
+                wdata
+            );
+
+            passed = passed + 1;
+
+        end
+
+        // Second CALL
+        timeout = 0;
+
+        while (!((cpu_req === 1'b1) &&
+                  (read_write === 1'b1) &&
+                  (addr === STACK_START - 1)) &&
+               timeout < 1000) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (wdata !== 32'd11) begin
+
+            $display("*** FAIL: Second CALL return address ***");
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display(
+                "Second CALL: addr=0x%04h return=%0d",
+                addr,
+                wdata
+            );
+
+            passed = passed + 1;
+
+        end
+
+        // Inner RET -> 11
+        timeout = 0;
+
+        while ((pc !== 12'd11) && (timeout < 1000)) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (pc !== 12'd11) begin
+
+            $display("*** FAIL: Inner RET ***");
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display("*** PASS: Inner RET -> 11 ***");
+
+            passed = passed + 1;
+
+        end
+
+        // Put RET at 11
+        put_ret(11);
+
+        // Outer RET -> 2
+        timeout = 0;
+
+        while ((pc !== 12'd2) && (timeout < 1000)) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (pc !== 12'd2) begin
+
+            $display("*** FAIL: Outer RET ***");
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display("*** PASS: Outer RET -> 2 ***");
+
+            passed = passed + 1;
+
+        end
+
+        $display("*** TEST 6 COMPLETE ***");
+
+    end
+    endtask
+
+    // ============================================================
+    // TEST 7
+    //
+    // WAIT STATE STRESS
+    //
+    // CALL and RET must hold their memory transaction until
+    // cpu_ready becomes active.
+    // ============================================================
+
+    task test_wait_states;
+
+        integer timeout;
+
+    begin
+
+        $display("");
+        $display("====================================================");
+        $display(" TEST 7: MEMORY WAIT-STATE STRESS");
+        $display("====================================================");
+
+        clear_memories;
+
+        put_call(1, 4);
+        put_halt(2);
+        put_ret(4);
+
+        reset_cpu;
+
+        // --------------------------------------------------------
+        // CALL with 5 wait cycles
+        // --------------------------------------------------------
+
+        wait_cycles = 5;
+        wait_counter = 0;
+
+        timeout = 0;
+
+        while (!((cpu_req === 1'b1) &&
+                  (read_write === 1'b1) &&
+                  (addr === STACK_START)) &&
+               timeout < 1000) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (timeout >= 1000) begin
+
+            $display("*** FAIL: CALL request timeout ***");
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            saved_stack_data = wdata;
+
+            $display(
+                "*** CALL request detected: return=%0d ***",
+                saved_stack_data
+            );
+
+            // Request must remain asserted while waiting.
+            repeat (3) begin
+
+                @(posedge clk);
+
+                if (!cpu_req) begin
+
+                    $display(
+                        "*** FAIL: CALL request disappeared during wait ***"
+                    );
+
+                    failures = failures + 1;
+
+                end
+
+                if (wdata !== saved_stack_data) begin
+
+                    $display(
+                        "*** FAIL: CALL wdata changed during wait ***"
+                    );
+
+                    failures = failures + 1;
+
+                end
+
+            end
+
+            if (saved_stack_data !== 32'd2) begin
+
+                $display("*** FAIL: CALL saved wrong return address ***");
+
+                failures = failures + 1;
+
+            end
+            else begin
+
+                $display("*** PASS: CALL survived wait states ***");
+
+                passed = passed + 1;
+
+            end
+
+        end
+
+        // --------------------------------------------------------
+        // Wait for target
+        // --------------------------------------------------------
+
+        timeout = 0;
+
+        while ((pc !== 12'd4) && (timeout < 1000)) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (pc !== 12'd4) begin
+
+            $display("*** FAIL: CALL target after wait ***");
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display("*** PASS: CALL target after wait = 4 ***");
+
+            passed = passed + 1;
+
+        end
+
+        // --------------------------------------------------------
+        // RET with 5 wait cycles
+        // --------------------------------------------------------
+
+        wait_counter = 0;
+
+        timeout = 0;
+
+        while (!((cpu_req === 1'b1) &&
+                  (read_write === 1'b0) &&
+                  (addr === STACK_START)) &&
+               timeout < 1000) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (timeout >= 1000) begin
+
+            $display("*** FAIL: RET request timeout ***");
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display("*** RET request detected ***");
+
+            repeat (3) begin
+
+                @(posedge clk);
+
+                if (!cpu_req) begin
+
+                    $display(
+                        "*** FAIL: RET request disappeared during wait ***"
+                    );
+
+                    failures = failures + 1;
+
+                end
+
+            end
+
+        end
+
+        // --------------------------------------------------------
+        // Wait for returned PC
+        // --------------------------------------------------------
+
+        timeout = 0;
+
+        while ((pc !== 12'd2) && (timeout < 1000)) begin
+
+            @(posedge clk);
+            timeout = timeout + 1;
+
+        end
+
+        if (pc !== 12'd2) begin
+
+            $display(
+                "*** FAIL: RET returned to PC %0d instead of 2 ***",
+                pc
+            );
+
+            failures = failures + 1;
+
+        end
+        else begin
+
+            $display("*** PASS: RET survived wait states ***");
+
+            passed = passed + 1;
+
+        end
+
+        wait_cycles = 0;
+
+        $display("*** TEST 7 COMPLETE ***");
+
+    end
+    endtask
+
+    // ============================================================
+    // TEST 8
+    //
+    // MIXED RANDOMIZED CALL TARGETS
+    //
+    // Uses several independent CALL locations and verifies:
+    //
+    //   saved return address = CALL PC + 1
+    //   target PC = encoded target
+    //
+    // This does not depend on zero-port functions.
+    // ============================================================
+
+    task test_mixed_targets;
+
+        integer k;
+        integer call_pc;
+        integer target_pc;
+        integer timeout;
+
+    begin
+
+        $display("");
+        $display("====================================================");
+        $display(" TEST 8: MIXED CALL TARGET STRESS");
+        $display("====================================================");
+
+        for (k = 0; k < 10; k = k + 1) begin
+
+            clear_memories;
+
+            call_pc = 1 + k;
+            target_pc = 100 + (k * 37);
+
+            put_call(call_pc, target_pc);
+
+            // Return instruction at target.
+            put_ret(target_pc);
+
+            reset_cpu;
+
+            // Wait for CALL
+            timeout = 0;
+
+            while (!((cpu_req === 1'b1) &&
+                      (read_write === 1'b1) &&
+                      (addr === STACK_START)) &&
+                   timeout < 1000) begin
+
+                @(posedge clk);
+                timeout = timeout + 1;
+
+            end
+
+            if (timeout >= 1000) begin
+
+                $display(
+                    "*** FAIL: iteration %0d CALL timeout ***",
+                    k
+                );
+
+                failures = failures + 1;
+
+            end
+            else begin
+
+                if (wdata !== (call_pc + 1)) begin
+
+                    $display(
+                        "*** FAIL: iteration %0d return=%0d expected=%0d ***",
+                        k,
+                        wdata,
+                        call_pc + 1
+                    );
+
+                    failures = failures + 1;
+
+                end
+                else begin
+
+                    $display(
+                        "Iteration %0d: CALL PC=%0d target=%0d return=%0d PASS",
+                        k,
+                        call_pc,
+                        target_pc,
+                        wdata
+                    );
+
+                    passed = passed + 1;
+
+                end
+
+            end
+
+            // Wait for target
+            timeout = 0;
+
+            while ((pc !== target_pc[11:0]) &&
+                   (timeout < 1000)) begin
+
+                @(posedge clk);
+                timeout = timeout + 1;
+
+            end
+
+            if (pc !== target_pc[11:0]) begin
+
+                $display(
+                    "*** FAIL: iteration %0d target PC=%0d expected=%0d ***",
+                    k,
+                    pc,
+                    target_pc
+                );
+
+                failures = failures + 1;
+
+            end
+            else begin
+
+                $display(
+                    "*** Target %0d reached ***",
+                    target_pc
+                );
+
+            end
+
+        end
+
+        $display("*** TEST 8 COMPLETE ***");
+
+    end
+    endtask
+
+    // ============================================================
+    // FINAL TEST SEQUENCE
+    // ============================================================
+
+    initial begin
+
+        failures = 0;
+        passed   = 0;
+
+        rst_n = 1'b0;
+
+        instruction = 32'b0;
+        rdata       = 32'b0;
+        cpu_ready   = 1'b0;
+
+        wait_cycles  = 0;
+        wait_counter = 0;
+
+        clear_memories;
+
+        // --------------------------------------------------------
+        // Run tests
+        // --------------------------------------------------------
+
+        test_basic_call_ret;
+
+        test_multiple_targets;
+
+        test_nested_calls;
+
+        test_deep_nesting;
+
+        test_repeated_call_ret;
+
+        test_stack_movement;
+
+        test_wait_states;
+
+        test_mixed_targets;
+
+        // --------------------------------------------------------
+        // Final result
+        // --------------------------------------------------------
+
+        #20;
+
+        $display("");
+        $display("====================================================");
+        $display("             CALL / RET STRESS COMPLETE");
+        $display("====================================================");
+
+        $display("Passed checks : %0d", passed);
+        $display("Failed checks : %0d", failures);
+
+        if (failures == 0) begin
+
+            $display("");
+            $display("*** ALL CALL / RET TESTS PASSED ***");
+            $display("");
+
+        end
+        else begin
+
+            $display("");
+            $display("*** CALL / RET TESTS FAILED ***");
+            $display("");
+
+        end
+
+        $display("====================================================");
+
+        $finish;
+
+    end
 
 endmodule
-
