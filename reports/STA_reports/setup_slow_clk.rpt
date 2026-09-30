@@ -2,14 +2,15 @@
 Report : timing
 	-path_type full
 	-delay_type max
+	-nworst 20
 	-slack_lesser_than 0.00
 	-max_paths 20
 	-sort_by slack
 Design : cpu_interface
 Version: S-2021.06-SP2
-Date   : Fri Sep 25 11:59:42 2026
+Date   : Wed Sep 30 12:09:55 2026
 ****************************************
 
-No constrained paths.
+No paths with slack less than 0.00.
 
 1
