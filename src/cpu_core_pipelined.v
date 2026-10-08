@@ -10,7 +10,7 @@ input wire rst_n,
 
 // program memory ports
 input wire [DATA_WIDTH-1:0] instruction,
-output wire [PROG_ADDR_WIDTH-1:0] program_count,
+output reg [PROG_ADDR_WIDTH-1:0] pc,
 
 //Cache Ports
 input wire [DATA_WIDTH-1:0] rdata,
@@ -68,8 +68,10 @@ localparam RET = 8'h28;
 
 reg [DATA_WIDTH-1:0] R [0:15];
 reg [3:0] psr;
-reg [PROG_ADDR_WIDTH-1:0] pc;
 
+// Hazard Units Control Signals 
+wire stall_en;
+reg fetch_en,decode_en,exe_en,mem_en,wb_en;
 
 // FETCH/DECODE Registers
 reg [PROG_ADDR_WIDTH-1:0] fetch_pc;
@@ -90,24 +92,45 @@ reg [DATA_WIDTH-1:0] decode_op_a,decode_op_b;
 reg decode_valid;
 
 // EXECUTE/MEMORY Registers
-reg [PROG_ADDR_WIDTH-1:0] exe_pc;
+reg [PROG_ADDR_WIDTH-1:0] exe_pc,exe_out_pc;
 reg [7:0] exe_opcode;
 reg [3:0] exe_rs1,exe_rs2,exe_rd;
 reg [11:0] exe_imm;
 
-reg exe_read;
-reg exe_write;
+reg exe_read; // Read from R registers, when cache REQ = 1 read from cache
+reg exe_write; // Write to R registers, when cache REQ = 1 write to cache
+reg exe_cache_req; // Wether or not cache is needed
+reg [3:0] exe_flags_write;
+reg Z,N,C,V;
+reg exe_branch_update;
 
 reg [DATA_WIDTH-1:0] exe_op_a,exe_op_b;
 reg [2*DATA_WIDTH-1:0] exe_alu_res;
 reg [DATA_WIDTH-1:0] exe_result_op; // NON alu operations if needed
 reg exe_valid;
-// MEMORY/WRITEBACK Registers
-reg [DATA_WIDTH-1:0] mem_res_reg;
-reg [DATA_WIDTH-1:0] mem_destination_reg;
+
+// EXECUTE/MEMORY Registers
+reg [PROG_ADDR_WIDTH-1:0] mem_pc;
+reg [3:0] mem_rd;
+
+reg [DATA_ADDR_WIDTH-1:0] mem_addr;
+reg [DATA_WIDTH-1:0] mem_wdata;
+
+reg mem_read;
+reg mem_write;
+reg mem_cache_req;
+
+reg [DATA_WIDTH-1:0] mem_res;
 reg mem_valid;
 
+// MEMORY/WRITEBACK Registers
+reg [PROG_ADDR_WIDTH-1:0] wb_pc;
+reg [DATA_WIDTH-1:0] wb_res;
+reg [3:0] wb_rd;
 
+reg wb_write;
+reg wb_cache_req;
+reg wb_valid;
 
 //Fetch Pipeline
 always@(posedge clk or negedge rst_n)
@@ -118,7 +141,7 @@ begin
     fetch_instruct <= 0;
     fetch_valid <= 0;
   end
-  else
+  else if(!stall_en)
   begin
     fetch_instruct <= instruction;
     fetch_valid <= (fetch_en) ? 1 : 0;
@@ -135,25 +158,49 @@ begin
     decode_instruct <= 0;
     decode_valid <= 0;
   end
-  else
+  else if(!stall_en)
   begin
     decode_pc <= fetch_pc;
     decode_instruct <= fetch_instruct;
-    decode_valid <= (decode_en) ? 1 : 0;
+    decode_valid <= (decode_en) ? fetch_valid : 0;
   end
 end
 
 always@(*)
 begin
-   decode_op_a = R[decode_rs1];
+   decode_op_a = 0;
+   decode_op_b = 0;
    case(decode_opcode)
-   ADD,SUB,MUL,OP_AND,OP_OR,CMP,EQ,OP_XOR,SLT,SLTU: decode_op_b = R[decode_rs2];
-   OP_NOT: decode_op_b = 0;
-   ADDI,SUBI: decode_op_b = { {DATA_WIDTH-12{decode_imm[11]}},decode_imm};
-   SHL,SHR,SAR,OP_ROL,OP_ROR:decode_op_b = { {DATA_WIDTH-5{1'b0}}, R[decode_rs2][4:0]};
-   ANDI,ORI,XORI: decode_op_b = { {DATA_WIDTH-12{1'b0}},decode_imm};
+   ADD,SUB,MUL,OP_AND,OP_OR,CMP,EQ,OP_XOR,SLT,SLTU:
+   begin
+     decode_op_a = R[decode_rs1];
+     decode_op_b = R[decode_rs2]; 
+   end
+   OP_NOT,MOV,LOAD_IND,JMP_IF,JMP_REG:decode_op_a = R[decode_rs1];
+   ADDI,SUBI:
+   begin 
+     decode_op_a = R[decode_rs1];
+     decode_op_b = { {DATA_WIDTH-12{decode_imm[11]}},decode_imm};
+   end
+   SHL,SHR,SAR,OP_ROL,OP_ROR:
+   begin
+     decode_op_a = R[decode_rs1];
+     decode_op_b = { {DATA_WIDTH-5{1'b0}}, R[decode_rs2][4:0]};
+   end
+   ANDI,ORI,XORI:
+   begin 
+     decode_op_a = R[decode_rs1];
+     decode_op_b = { {DATA_WIDTH-12{1'b0}},decode_imm};
+   end
+   STORE: decode_op_a = R[decode_rd];
+   STORE_IND:
+   begin
+     decode_op_a = R[decode_rd];
+     decode_op_b = R[decode_rs2];
+   end
    default:
    begin
+      decode_op_a = 0;
       decode_op_b = 0;
    end
    endcase
@@ -171,12 +218,15 @@ begin
     exe_rs2 <= 0;
     exe_rd <= 0;
     exe_imm <= 0; 
-    
+     
     exe_op_a <= 0;
     exe_op_b <= 0;
+    
+    psr <= 0;
+    pc <= 0;
     exe_valid <= 0;
   end
-  else
+  else if(!stall_en)
   begin
     exe_pc <= decode_pc;
     exe_opcode <= decode_opcode;
@@ -187,12 +237,21 @@ begin
     
     exe_op_a <= decode_op_a;
     exe_op_b <= decode_op_b;
-    exe_valid <= (exe_en) ? 1 : 0;
+    
+    psr[0] <= (exe_flags_write[0]) ? Z : psr[0]; 
+    psr[1] <= (exe_flags_write[1]) ? N : psr[1]; 
+    psr[2] <= (exe_flags_write[2]) ? C : psr[2]; 
+    psr[3] <= (exe_flags_write[3]) ? V : psr[3]; 
+  
+    pc <= (exe_branch_update) ? exe_out_pc: pc + 1;
+    exe_valid <= (exe_en) ? decode_valid : 0;
   end
 end
+
 always@(*)
 begin
   exe_alu_res = 0;
+  exe_flags_write = 0;
   Z = 0;
   N = 0;
   C = 0;
@@ -204,6 +263,7 @@ begin
     Z = exe_alu_res == 0;
     N = exe_alu_res[31];
     V = ( ~(exe_op_a[31] ^ exe_op_b[31]) ) & (exe_alu_res[31] ^ exe_op_a[31]); 
+    exe_flags_write = 4'b1111;
   end
   SUB,SUBI,CMP:
   begin
@@ -212,18 +272,21 @@ begin
     Z = exe_alu_res == 0;
     N = exe_alu_res[31];
     V = ( (exe_op_a[31] ^ exe_op_b[31]) ) & (exe_alu_res[31] ^ exe_op_a[31]); 
+    exe_flags_write = 4'b1111;
   end
   MUL:
   begin
       exe_alu_res = exe_op_a * exe_op_b;
       Z = (exe_alu_res[31:0] == 0);
       N = exe_alu_res[31];
+      exe_flags_write = 4'b0011;
   end
   OP_AND,ANDI:
   begin
     exe_alu_res[31:0] = exe_op_a & exe_op_b;
     Z = exe_alu_res[31:0] == 0;
     N = exe_alu_res[31];
+    exe_flags_write = 4'b0011;
   end
 
   OP_OR,ORI:
@@ -231,6 +294,7 @@ begin
     exe_alu_res[31:0] = exe_op_a | exe_op_b;
     Z = exe_alu_res[31:0] == 0;
     N = exe_alu_res[31];
+    exe_flags_write = 4'b0011;
   end
 
   OP_XOR,XORI:
@@ -238,6 +302,7 @@ begin
     exe_alu_res[31:0] = exe_op_a ^ exe_op_b;
     Z = exe_alu_res[31:0] == 0;
     N = exe_alu_res[31];
+    exe_flags_write = 4'b0011;
   end
 
   OP_NOT:
@@ -245,6 +310,7 @@ begin
     exe_alu_res[31:0] = ~exe_op_a;
     Z = exe_alu_res[31:0] == 0;
     N = exe_alu_res[31];
+    exe_flags_write = 4'b0011;
   end
 
 
@@ -253,6 +319,7 @@ begin
     exe_alu_res[31:0] = exe_op_a << exe_op_b[4:0];
     Z = exe_alu_res[31:0] == 0;
     N = exe_alu_res[31];
+    exe_flags_write = 4'b0011;
   end
 
   SHR:
@@ -260,6 +327,7 @@ begin
     exe_alu_res[31:0] = exe_op_a >> exe_op_b[4:0];
     Z = exe_alu_res[31:0] == 0;
     N = exe_alu_res[31];
+    exe_flags_write = 4'b0011;
   end
 
   SAR:
@@ -267,6 +335,7 @@ begin
     exe_alu_res[31:0] = $signed(exe_op_a) >>> exe_op_b[4:0];
     Z = exe_alu_res[31:0] == 0;
     N = exe_alu_res[31];
+    exe_flags_write = 4'b0011;
   end
   
   OP_ROL:
@@ -277,6 +346,7 @@ begin
         exe_alu_res[31:0] = (exe_op_a << exe_op_b[4:0]) | (exe_op_a >> ( 32- exe_op_b[4:0]));
     Z = exe_alu_res[31:0] == 0;
     N = exe_alu_res[31];
+    exe_flags_write = 4'b0011;
   end
 
   OP_ROR:
@@ -288,6 +358,7 @@ begin
 
     Z = exe_alu_res[31:0] == 0;
     N = exe_alu_res[31];
+    exe_flags_write = 4'b0011;
   end
 
   EQ:
@@ -295,9 +366,7 @@ begin
     exe_alu_res[31:0] = (exe_op_a == exe_op_b) ? 1 : 0;
     
     Z = exe_alu_res[31:0] == 0;
-    N = exe_alu_res[31];
-    C = 0;
-    V = 0;
+    exe_flags_write = 4'b0001;
   end
 
 
@@ -306,9 +375,7 @@ begin
     exe_alu_res[31:0] = ( $signed(exe_op_a) < $signed(exe_op_b)) ? 1 : 0;
     
     Z = exe_alu_res[31:0] == 0;
-    N = exe_alu_res[31];
-    C = 0;
-    V = 0;
+    exe_flags_write = 4'b0001;
   end
 
 
@@ -317,9 +384,7 @@ begin
     exe_alu_res[31:0] = ( exe_op_a < exe_op_b) ? 1 : 0;
     
     Z = exe_alu_res[31:0] == 0;
-    N = exe_alu_res[31];
-    C = 0;
-    V = 0;
+    exe_flags_write = 4'b0001;
   end
   
   default:
@@ -328,6 +393,7 @@ begin
     N = 0;
     C = 0;
     V = 0;
+    exe_flags_write = 4'b0000;
   end
   endcase
 end
@@ -343,5 +409,234 @@ begin
   endcase
 end
 
+//Branch Operations
+always@(*)
+begin
+  exe_out_pc = exe_pc;
+  exe_branch_update = 0;
+  case(exe_opcode)
+     JMP:
+     begin
+     exe_out_pc = exe_imm;
+     exe_branch_update = 1;
+     end
+     JMP_IF:
+     begin
+       if(exe_op_a != 0)
+       begin
+         exe_out_pc = exe_imm;
+         exe_branch_update = 1;  
+       end
+     end
+     BEQ:
+     begin
+       if(psr[0])
+       begin
+         exe_out_pc = exe_imm;
+         exe_branch_update = 1;  
+       end
+     end
+     BNE: 
+     begin
+       if(!psr[0])
+       begin
+         exe_out_pc = exe_imm;
+         exe_branch_update = 1;  
+       end
+     end
+     BLT: 
+     begin
+       if(psr[1] ^ psr[3])
+       begin
+         exe_out_pc = exe_imm;
+         exe_branch_update = 1;  
+       end
+     end
+     BGE:
+     begin
+       if(!(psr[1] ^ psr[3]))
+       begin
+         exe_out_pc = exe_imm;
+         exe_branch_update = 1;  
+       end
+     end
+     BLTU:
+     begin
+       if(!psr[2])
+       begin
+         exe_out_pc = exe_imm;
+         exe_branch_update = 1;  
+       end
+     end
+     BGEU:
+     begin
+       if(psr[2])
+       begin
+         exe_out_pc = exe_imm;
+         exe_branch_update = 1;  
+       end
+     end
+     JMP_REG:
+     begin
+         exe_out_pc = exe_op_a[PROG_ADDR_WIDTH-1:0];
+         exe_branch_update = 1;  
+     end
+     default:
+     begin
+      exe_out_pc =  exe_pc; 
+      exe_branch_update = 0;
+     end
+  endcase
+end
 
+//Read Write Enabling
+always@(*)
+begin
+  exe_read = 0;
+  exe_write = 0;
+  exe_cache_req = 0;
+  case(exe_opcode)
+  ADD,SUB,MUL,OP_AND,OP_OR,OP_XOR,OP_NOT,EQ,SHL,SHR,SAR,OP_ROL,OP_ROR,ADDI,SUBI,ANDI,ORI,XORI,SLT,SLTU,MOV:
+  begin
+    exe_read = 1;
+    exe_write = 1;
+    exe_cache_req = 0;
+  end 
+  LOAD_IMM,LUI:
+  begin
+    exe_read = 0;
+    exe_write = 1;
+    exe_cache_req = 0;
+  end
+  LOAD,LOAD_IND:
+  begin
+    exe_read = 1;
+    exe_write = 0;
+    exe_cache_req = 1;
+  end
+  STORE,STORE_IND:
+  begin
+    exe_read = 0;
+    exe_write = 1;
+    exe_cache_req = 1;
+  end
+  default:
+  begin
+    exe_read = 0;
+    exe_write = 0;
+    exe_cache_req = 0;
+  end 
+  endcase
+end
+
+//Memory Pipeline
+always@(posedge clk or negedge rst_n)
+begin
+  if(!rst_n)
+  begin
+    mem_pc <= 0;
+    mem_rd <= 0; 
+
+    mem_addr <= 0; 
+    mem_wdata <= 0;
+
+    mem_read <= 0;
+    mem_write <= 0;
+    mem_cache_req <= 0;
+
+    mem_res <= 0;
+    mem_valid <= 0;
+  end
+  else if(!stall_en)
+  begin
+    mem_pc <= exe_out_pc;
+    mem_rd <= exe_rd; 
+  
+    case(exe_opcode)
+    LOAD,STORE: mem_addr <= { {DATA_ADDR_WIDTH-12{1'b0}},exe_imm};
+    LOAD_IND: mem_addr <= exe_op_a[DATA_ADDR_WIDTH-1:0];
+    STORE_IND: mem_addr <= exe_op_b[DATA_ADDR_WIDTH-1:0];
+    default: mem_addr <= 0;
+    endcase
+
+    case(exe_opcode)
+    STORE,STORE_IND: mem_wdata <= exe_op_a; 
+    default: mem_wdata <= 0;
+    endcase
+
+    mem_read <= exe_read;
+    mem_write <= exe_write;
+    mem_cache_req <= exe_cache_req;
+
+    case(exe_opcode)
+    ADD,SUB,MUL,OP_AND,OP_OR,OP_XOR,OP_NOT,EQ,SHL,SHR,SAR,OP_ROL,OP_ROR,ADDI,SUBI,ANDI,ORI,XORI,SLT,SLTU : mem_res <= exe_alu_res[DATA_WIDTH-1:0];  
+    LOAD_IMM,LUI,MOV: mem_res <= exe_result_op;
+    LOAD,LOAD_IND: mem_res <= rdata;
+    default: mem_res <= 0;
+    endcase
+  
+    mem_valid <= (mem_en) ? exe_valid : 0;
+  end
+end
+
+always@(*)
+begin
+  cpu_req = 0;
+  read_write = 0;
+  addr = 0;
+  wdata = 0;
+  
+  if(mem_cache_req)
+  begin
+    cpu_req = 1;
+    read_write = mem_write;
+    addr = mem_addr;
+    wdata = mem_wdata;
+  end
+end
+
+assign stall_en = mem_cache_req && !cpu_ready;
+
+//WriteBack Pipeline
+always@(posedge clk or negedge rst_n)
+begin
+  if(!rst_n)
+  begin
+    wb_pc <= 0;
+    wb_res <= 0;
+    wb_rd <= 0;
+
+    wb_write <= 0;
+    wb_cache_req <= 0;
+    wb_valid <= 0;
+  end
+  else if(!stall_en)
+  begin
+    wb_pc <= mem_pc;
+    wb_rd <= mem_rd;
+    
+    wb_write <= mem_write;
+    wb_cache_req <= mem_cache_req;
+    wb_res <= mem_res;
+
+    wb_valid <= (wb_en) ? mem_valid : 0;
+  end
+end
+
+integer i;
+always@(posedge clk or negedge rst_n)
+begin
+  if(!rst_n)
+  begin
+    for(i = 0; i < 16 ; i = i + 1)
+        R[i] <= 0;
+  end
+  else if(!stall_en)
+  begin
+      if(wb_write && !wb_cache_req)
+         R[wb_rd] <= wb_res;
+      else if(!wb_write && wb_cache_req)
+         R[wb_rd] <= wb_res;
+  end
+end
 endmodule
