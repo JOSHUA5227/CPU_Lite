@@ -2,7 +2,7 @@
 Report : clock_skew
 Design : cpu_interface
 Version: S-2021.06-SP2
-Date   : Sun Oct 11 22:30:42 2026
+Date   : Mon Oct 12 02:56:53 2026
 ****************************************
 
               Min Rise  Min Fall  Max Rise  Max Fall     Hold          Setup        Related

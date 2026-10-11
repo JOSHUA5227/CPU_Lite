@@ -6,7 +6,7 @@ Report : timing
         -max_paths 20
 Design : cpu_interface
 Version: S-2021.06-SP4
-Date   : Sun Oct 11 22:26:37 2026
+Date   : Mon Oct 12 02:55:19 2026
 ****************************************
 
  # A fanout number of 1000 was used for high fanout net computations.
@@ -33,7 +33,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_cache/refill_req_count_reg[1]/CLK (DFFARX1_LVT)       0.00 #     0.00 r
   u_cache/refill_req_count_reg[1]/QN (DFFARX1_LVT)        0.12       0.12 f
-  u_cache/U1835/Y (AO22X1_LVT)                            0.07       0.19 f
+  u_cache/U1966/Y (AO22X1_LVT)                            0.07       0.19 f
   u_cache/refill_req_count_reg[1]/D (DFFARX1_LVT)         0.00       0.19 f
   data arrival time                                                  0.19
 
@@ -271,7 +271,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_request_fifo/w1/w_ptr_reg[2]/CLK (DFFARX1_LVT)        0.00 #     0.00 r
   u_request_fifo/w1/w_ptr_reg[2]/QN (DFFARX1_LVT)         0.12       0.12 f
-  U1159/Y (AO22X1_LVT)                                    0.08       0.20 f
+  U1201/Y (AO22X1_LVT)                                    0.08       0.20 f
   u_request_fifo/w1/w_ptr_reg[2]/D (DFFARX1_LVT)          0.00       0.20 f
   data arrival time                                                  0.20
 
@@ -340,7 +340,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_response_fifo/r1/r_ptr_reg[2]/CLK (DFFARX1_LVT)       0.00 #     0.00 r
   u_response_fifo/r1/r_ptr_reg[2]/QN (DFFARX1_LVT)        0.13       0.13 f
-  U1141/Y (AO22X1_LVT)                                    0.08       0.22 f
+  U1187/Y (AO22X1_LVT)                                    0.08       0.22 f
   u_response_fifo/r1/r_ptr_reg[2]/D (DFFARX1_LVT)         0.00       0.22 f
   data arrival time                                                  0.22
 
@@ -392,9 +392,9 @@ Wire Load Model Mode: enclosed
   slack (MET)                                                        0.18
 
 
-  Startpoint: u_cpu_core/pc_reg[4]
+  Startpoint: u_cpu_core/pc_reg[1]
               (rising edge-triggered flip-flop clocked by fast_clk)
-  Endpoint: u_cpu_core/pc_reg[4]
+  Endpoint: u_cpu_core/pc_reg[1]
             (rising edge-triggered flip-flop clocked by fast_clk)
   Path Group: fast_clk
   Path Type: min
@@ -409,59 +409,24 @@ Wire Load Model Mode: enclosed
   --------------------------------------------------------------------------
   clock fast_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_cpu_core/pc_reg[4]/CLK (DFFARX1_LVT)                  0.00 #     0.00 r
-  u_cpu_core/pc_reg[4]/QN (DFFARX1_LVT)                   0.12       0.12 f
-  u_cpu_core/U5581/Y (OA222X1_LVT)                        0.11       0.23 f
-  u_cpu_core/pc_reg[4]/D (DFFARX1_LVT)                    0.00       0.23 f
-  data arrival time                                                  0.23
+  u_cpu_core/pc_reg[1]/CLK (DFFARX1_LVT)                  0.00 #     0.00 r
+  u_cpu_core/pc_reg[1]/QN (DFFARX1_LVT)                   0.14       0.14 r
+  u_cpu_core/U4018/Y (NAND2X0_LVT)                        0.03       0.17 f
+  u_cpu_core/U4019/Y (AO22X1_LVT)                         0.07       0.24 f
+  u_cpu_core/pc_reg[1]/D (DFFARX1_LVT)                    0.00       0.24 f
+  data arrival time                                                  0.24
 
   clock fast_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock uncertainty                                       0.07       0.07
-  u_cpu_core/pc_reg[4]/CLK (DFFARX1_LVT)                  0.00       0.07 r
-  library hold time                                      -0.04       0.03
-  data required time                                                 0.03
+  u_cpu_core/pc_reg[1]/CLK (DFFARX1_LVT)                  0.00       0.07 r
+  library hold time                                      -0.03       0.04
+  data required time                                                 0.04
   --------------------------------------------------------------------------
-  data required time                                                 0.03
-  data arrival time                                                 -0.23
+  data required time                                                 0.04
+  data arrival time                                                 -0.24
   --------------------------------------------------------------------------
-  slack (MET)                                                        0.20
-
-
-  Startpoint: u_cpu_core/pc_reg[5]
-              (rising edge-triggered flip-flop clocked by fast_clk)
-  Endpoint: u_cpu_core/pc_reg[5]
-            (rising edge-triggered flip-flop clocked by fast_clk)
-  Path Group: fast_clk
-  Path Type: min
-
-  Des/Clust/Port     Wire Load Model       Library
-  ------------------------------------------------
-  cpu_interface      70000                 saed32lvt_ss0p75v25c
-  cpu_core_pipelined_PROG_ADDR_WIDTH12_DATA_ADDR_WIDTH14_DATA_WIDTH32
-                     35000                 saed32lvt_ss0p75v25c
-
-  Point                                                   Incr       Path
-  --------------------------------------------------------------------------
-  clock fast_clk (rise edge)                              0.00       0.00
-  clock network delay (ideal)                             0.00       0.00
-  u_cpu_core/pc_reg[5]/CLK (DFFARX1_LVT)                  0.00 #     0.00 r
-  u_cpu_core/pc_reg[5]/QN (DFFARX1_LVT)                   0.12       0.12 f
-  u_cpu_core/U5628/Y (OA222X1_LVT)                        0.11       0.23 f
-  u_cpu_core/pc_reg[5]/D (DFFARX1_LVT)                    0.00       0.23 f
-  data arrival time                                                  0.23
-
-  clock fast_clk (rise edge)                              0.00       0.00
-  clock network delay (ideal)                             0.00       0.00
-  clock uncertainty                                       0.07       0.07
-  u_cpu_core/pc_reg[5]/CLK (DFFARX1_LVT)                  0.00       0.07 r
-  library hold time                                      -0.04       0.03
-  data required time                                                 0.03
-  --------------------------------------------------------------------------
-  data required time                                                 0.03
-  data arrival time                                                 -0.23
-  --------------------------------------------------------------------------
-  slack (MET)                                                        0.20
+  slack (MET)                                                        0.21
 
 
   Startpoint: u_request_fifo/w1/w_ptr_reg[2]
@@ -481,8 +446,8 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_request_fifo/w1/w_ptr_reg[2]/CLK (DFFARX1_LVT)        0.00 #     0.00 r
   u_request_fifo/w1/w_ptr_reg[2]/QN (DFFARX1_LVT)         0.15       0.15 r
-  U790/Y (OA22X1_LVT)                                     0.08       0.23 r
-  U791/Y (INVX0_LVT)                                      0.03       0.25 f
+  U848/Y (OA22X1_LVT)                                     0.08       0.23 r
+  U821/Y (INVX0_LVT)                                      0.03       0.25 f
   u_request_fifo/w_ptr_gray_reg_reg[1]/D (DFFARX1_LVT)
                                                           0.00       0.25 f
   data arrival time                                                  0.25
@@ -501,9 +466,9 @@ Wire Load Model Mode: enclosed
   slack (MET)                                                        0.21
 
 
-  Startpoint: u_request_fifo/m1/mem_reg[2][46]
+  Startpoint: u_request_fifo/m1/mem_reg[2][26]
               (rising edge-triggered flip-flop clocked by fast_clk)
-  Endpoint: u_request_fifo/m1/mem_reg[2][46]
+  Endpoint: u_request_fifo/m1/mem_reg[2][26]
             (rising edge-triggered flip-flop clocked by fast_clk)
   Path Group: fast_clk
   Path Type: min
@@ -516,28 +481,28 @@ Wire Load Model Mode: enclosed
   --------------------------------------------------------------------------
   clock fast_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_request_fifo/m1/mem_reg[2][46]/CLK (DFFX1_LVT)        0.00 #     0.00 r
-  u_request_fifo/m1/mem_reg[2][46]/Q (DFFX1_LVT)          0.18       0.18 f
-  U1208/Y (AO22X1_LVT)                                    0.07       0.25 f
-  u_request_fifo/m1/mem_reg[2][46]/D (DFFX1_LVT)          0.00       0.25 f
+  u_request_fifo/m1/mem_reg[2][26]/CLK (DFFX1_LVT)        0.00 #     0.00 r
+  u_request_fifo/m1/mem_reg[2][26]/Q (DFFX1_LVT)          0.18       0.18 f
+  U1269/Y (AO22X1_LVT)                                    0.07       0.25 f
+  u_request_fifo/m1/mem_reg[2][26]/D (DFFX1_LVT)          0.00       0.25 f
   data arrival time                                                  0.25
 
   clock fast_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock uncertainty                                       0.07       0.07
-  u_request_fifo/m1/mem_reg[2][46]/CLK (DFFX1_LVT)        0.00       0.07 r
-  library hold time                                      -0.04       0.03
+  u_request_fifo/m1/mem_reg[2][26]/CLK (DFFX1_LVT)        0.00       0.07 r
+  library hold time                                      -0.03       0.03
   data required time                                                 0.03
   --------------------------------------------------------------------------
   data required time                                                 0.03
   data arrival time                                                 -0.25
   --------------------------------------------------------------------------
-  slack (MET)                                                        0.22
+  slack (MET)                                                        0.21
 
 
-  Startpoint: u_request_fifo/m1/mem_reg[2][0]
+  Startpoint: u_request_fifo/m1/mem_reg[2][24]
               (rising edge-triggered flip-flop clocked by fast_clk)
-  Endpoint: u_request_fifo/m1/mem_reg[2][0]
+  Endpoint: u_request_fifo/m1/mem_reg[2][24]
             (rising edge-triggered flip-flop clocked by fast_clk)
   Path Group: fast_clk
   Path Type: min
@@ -550,28 +515,28 @@ Wire Load Model Mode: enclosed
   --------------------------------------------------------------------------
   clock fast_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_request_fifo/m1/mem_reg[2][0]/CLK (DFFX1_LVT)         0.00 #     0.00 r
-  u_request_fifo/m1/mem_reg[2][0]/Q (DFFX1_LVT)           0.18       0.18 f
-  U1207/Y (AO22X1_LVT)                                    0.07       0.25 f
-  u_request_fifo/m1/mem_reg[2][0]/D (DFFX1_LVT)           0.00       0.25 f
+  u_request_fifo/m1/mem_reg[2][24]/CLK (DFFX1_LVT)        0.00 #     0.00 r
+  u_request_fifo/m1/mem_reg[2][24]/Q (DFFX1_LVT)          0.18       0.18 f
+  U1271/Y (AO22X1_LVT)                                    0.07       0.25 f
+  u_request_fifo/m1/mem_reg[2][24]/D (DFFX1_LVT)          0.00       0.25 f
   data arrival time                                                  0.25
 
   clock fast_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock uncertainty                                       0.07       0.07
-  u_request_fifo/m1/mem_reg[2][0]/CLK (DFFX1_LVT)         0.00       0.07 r
-  library hold time                                      -0.04       0.03
+  u_request_fifo/m1/mem_reg[2][24]/CLK (DFFX1_LVT)        0.00       0.07 r
+  library hold time                                      -0.03       0.03
   data required time                                                 0.03
   --------------------------------------------------------------------------
   data required time                                                 0.03
   data arrival time                                                 -0.25
   --------------------------------------------------------------------------
-  slack (MET)                                                        0.22
+  slack (MET)                                                        0.21
 
 
-  Startpoint: u_request_fifo/m1/mem_reg[2][4]
+  Startpoint: u_request_fifo/m1/mem_reg[2][11]
               (rising edge-triggered flip-flop clocked by fast_clk)
-  Endpoint: u_request_fifo/m1/mem_reg[2][4]
+  Endpoint: u_request_fifo/m1/mem_reg[2][11]
             (rising edge-triggered flip-flop clocked by fast_clk)
   Path Group: fast_clk
   Path Type: min
@@ -584,23 +549,91 @@ Wire Load Model Mode: enclosed
   --------------------------------------------------------------------------
   clock fast_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_request_fifo/m1/mem_reg[2][4]/CLK (DFFX1_LVT)         0.00 #     0.00 r
-  u_request_fifo/m1/mem_reg[2][4]/Q (DFFX1_LVT)           0.18       0.18 f
-  U1251/Y (AO22X1_LVT)                                    0.07       0.25 f
-  u_request_fifo/m1/mem_reg[2][4]/D (DFFX1_LVT)           0.00       0.25 f
+  u_request_fifo/m1/mem_reg[2][11]/CLK (DFFX1_LVT)        0.00 #     0.00 r
+  u_request_fifo/m1/mem_reg[2][11]/Q (DFFX1_LVT)          0.18       0.18 f
+  U1284/Y (AO22X1_LVT)                                    0.07       0.25 f
+  u_request_fifo/m1/mem_reg[2][11]/D (DFFX1_LVT)          0.00       0.25 f
   data arrival time                                                  0.25
 
   clock fast_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock uncertainty                                       0.07       0.07
-  u_request_fifo/m1/mem_reg[2][4]/CLK (DFFX1_LVT)         0.00       0.07 r
-  library hold time                                      -0.04       0.03
+  u_request_fifo/m1/mem_reg[2][11]/CLK (DFFX1_LVT)        0.00       0.07 r
+  library hold time                                      -0.03       0.03
   data required time                                                 0.03
   --------------------------------------------------------------------------
   data required time                                                 0.03
   data arrival time                                                 -0.25
   --------------------------------------------------------------------------
-  slack (MET)                                                        0.22
+  slack (MET)                                                        0.21
+
+
+  Startpoint: u_request_fifo/m1/mem_reg[2][7]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_request_fifo/m1/mem_reg[2][7]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_request_fifo/m1/mem_reg[2][7]/CLK (DFFX1_LVT)         0.00 #     0.00 r
+  u_request_fifo/m1/mem_reg[2][7]/Q (DFFX1_LVT)           0.18       0.18 f
+  U1288/Y (AO22X1_LVT)                                    0.07       0.25 f
+  u_request_fifo/m1/mem_reg[2][7]/D (DFFX1_LVT)           0.00       0.25 f
+  data arrival time                                                  0.25
+
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.07       0.07
+  u_request_fifo/m1/mem_reg[2][7]/CLK (DFFX1_LVT)         0.00       0.07 r
+  library hold time                                      -0.03       0.03
+  data required time                                                 0.03
+  --------------------------------------------------------------------------
+  data required time                                                 0.03
+  data arrival time                                                 -0.25
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.21
+
+
+  Startpoint: u_request_fifo/m1/mem_reg[2][6]
+              (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_request_fifo/m1/mem_reg[2][6]
+            (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: min
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  cpu_interface      70000                 saed32lvt_ss0p75v25c
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_request_fifo/m1/mem_reg[2][6]/CLK (DFFX1_LVT)         0.00 #     0.00 r
+  u_request_fifo/m1/mem_reg[2][6]/Q (DFFX1_LVT)           0.18       0.18 f
+  U1289/Y (AO22X1_LVT)                                    0.07       0.25 f
+  u_request_fifo/m1/mem_reg[2][6]/D (DFFX1_LVT)           0.00       0.25 f
+  data arrival time                                                  0.25
+
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock uncertainty                                       0.07       0.07
+  u_request_fifo/m1/mem_reg[2][6]/CLK (DFFX1_LVT)         0.00       0.07 r
+  library hold time                                      -0.03       0.03
+  data required time                                                 0.03
+  --------------------------------------------------------------------------
+  data required time                                                 0.03
+  data arrival time                                                 -0.25
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.21
 
 
   Startpoint: u_request_fifo/m1/mem_reg[2][3]
@@ -620,7 +653,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_request_fifo/m1/mem_reg[2][3]/CLK (DFFX1_LVT)         0.00 #     0.00 r
   u_request_fifo/m1/mem_reg[2][3]/Q (DFFX1_LVT)           0.18       0.18 f
-  U1252/Y (AO22X1_LVT)                                    0.07       0.25 f
+  U1292/Y (AO22X1_LVT)                                    0.07       0.25 f
   u_request_fifo/m1/mem_reg[2][3]/D (DFFX1_LVT)           0.00       0.25 f
   data arrival time                                                  0.25
 
@@ -628,13 +661,13 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   clock uncertainty                                       0.07       0.07
   u_request_fifo/m1/mem_reg[2][3]/CLK (DFFX1_LVT)         0.00       0.07 r
-  library hold time                                      -0.04       0.03
+  library hold time                                      -0.03       0.03
   data required time                                                 0.03
   --------------------------------------------------------------------------
   data required time                                                 0.03
   data arrival time                                                 -0.25
   --------------------------------------------------------------------------
-  slack (MET)                                                        0.22
+  slack (MET)                                                        0.21
 
 
   Startpoint: u_request_fifo/m1/mem_reg[2][2]
@@ -654,7 +687,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_request_fifo/m1/mem_reg[2][2]/CLK (DFFX1_LVT)         0.00 #     0.00 r
   u_request_fifo/m1/mem_reg[2][2]/Q (DFFX1_LVT)           0.18       0.18 f
-  U1253/Y (AO22X1_LVT)                                    0.07       0.25 f
+  U1293/Y (AO22X1_LVT)                                    0.07       0.25 f
   u_request_fifo/m1/mem_reg[2][2]/D (DFFX1_LVT)           0.00       0.25 f
   data arrival time                                                  0.25
 
@@ -662,47 +695,13 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   clock uncertainty                                       0.07       0.07
   u_request_fifo/m1/mem_reg[2][2]/CLK (DFFX1_LVT)         0.00       0.07 r
-  library hold time                                      -0.04       0.03
+  library hold time                                      -0.03       0.03
   data required time                                                 0.03
   --------------------------------------------------------------------------
   data required time                                                 0.03
   data arrival time                                                 -0.25
   --------------------------------------------------------------------------
-  slack (MET)                                                        0.22
-
-
-  Startpoint: u_request_fifo/m1/mem_reg[2][1]
-              (rising edge-triggered flip-flop clocked by fast_clk)
-  Endpoint: u_request_fifo/m1/mem_reg[2][1]
-            (rising edge-triggered flip-flop clocked by fast_clk)
-  Path Group: fast_clk
-  Path Type: min
-
-  Des/Clust/Port     Wire Load Model       Library
-  ------------------------------------------------
-  cpu_interface      70000                 saed32lvt_ss0p75v25c
-
-  Point                                                   Incr       Path
-  --------------------------------------------------------------------------
-  clock fast_clk (rise edge)                              0.00       0.00
-  clock network delay (ideal)                             0.00       0.00
-  u_request_fifo/m1/mem_reg[2][1]/CLK (DFFX1_LVT)         0.00 #     0.00 r
-  u_request_fifo/m1/mem_reg[2][1]/Q (DFFX1_LVT)           0.18       0.18 f
-  U1254/Y (AO22X1_LVT)                                    0.07       0.25 f
-  u_request_fifo/m1/mem_reg[2][1]/D (DFFX1_LVT)           0.00       0.25 f
-  data arrival time                                                  0.25
-
-  clock fast_clk (rise edge)                              0.00       0.00
-  clock network delay (ideal)                             0.00       0.00
-  clock uncertainty                                       0.07       0.07
-  u_request_fifo/m1/mem_reg[2][1]/CLK (DFFX1_LVT)         0.00       0.07 r
-  library hold time                                      -0.04       0.03
-  data required time                                                 0.03
-  --------------------------------------------------------------------------
-  data required time                                                 0.03
-  data arrival time                                                 -0.25
-  --------------------------------------------------------------------------
-  slack (MET)                                                        0.22
+  slack (MET)                                                        0.21
 
 
   Startpoint: u_response_fifo/sync_r/q_reg[0][2]
@@ -926,7 +925,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_response_fifo/w1/w_ptr_reg[2]/CLK (DFFARX1_LVT)       0.00       0.00 r
   u_response_fifo/w1/w_ptr_reg[2]/QN (DFFARX1_LVT)        0.12       0.12 f
-  U1359/Y (AO22X1_LVT)                                    0.08       0.20 f
+  U1393/Y (AO22X1_LVT)                                    0.08       0.20 f
   u_response_fifo/w1/w_ptr_reg[2]/D (DFFARX1_LVT)         0.00       0.20 f
   data arrival time                                                  0.20
 
@@ -995,7 +994,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_request_fifo/r1/r_ptr_reg[2]/CLK (DFFARX1_LVT)        0.00       0.00 r
   u_request_fifo/r1/r_ptr_reg[2]/QN (DFFARX1_LVT)         0.13       0.13 f
-  U1154/Y (AO22X1_LVT)                                    0.08       0.22 f
+  U1198/Y (AO22X1_LVT)                                    0.08       0.22 f
   u_request_fifo/r1/r_ptr_reg[2]/D (DFFARX1_LVT)          0.00       0.22 f
   data arrival time                                                  0.22
 
@@ -1064,7 +1063,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_request_fifo/r1/r_ptr_reg[0]/CLK (DFFARX1_LVT)        0.00       0.00 r
   u_request_fifo/r1/r_ptr_reg[0]/QN (DFFARX1_LVT)         0.14       0.14 f
-  U1152/Y (AO22X1_LVT)                                    0.08       0.22 f
+  U1196/Y (AO22X1_LVT)                                    0.08       0.22 f
   u_request_fifo/r1/r_ptr_reg[0]/D (DFFARX1_LVT)          0.00       0.22 f
   data arrival time                                                  0.22
 
@@ -1098,7 +1097,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_request_fifo/r1/r_ptr_reg[1]/CLK (DFFARX1_LVT)        0.00       0.00 r
   u_request_fifo/r1/r_ptr_reg[1]/QN (DFFARX1_LVT)         0.13       0.13 f
-  U929/Y (AO22X1_LVT)                                     0.09       0.22 f
+  U980/Y (AO22X1_LVT)                                     0.09       0.22 f
   u_request_fifo/r_ptr_gray_reg_reg[0]/D (DFFARX1_LVT)
                                                           0.00       0.22 f
   data arrival time                                                  0.22
@@ -1134,7 +1133,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_response_fifo/w1/w_ptr_reg[1]/CLK (DFFARX1_LVT)       0.00       0.00 r
   u_response_fifo/w1/w_ptr_reg[1]/QN (DFFARX1_LVT)        0.13       0.13 f
-  U773/Y (AO22X1_LVT)                                     0.09       0.22 f
+  U833/Y (AO22X1_LVT)                                     0.09       0.22 f
   u_response_fifo/w_ptr_gray_reg_reg[1]/D (DFFARX1_LVT)
                                                           0.00       0.22 f
   data arrival time                                                  0.22
@@ -1170,7 +1169,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_response_fifo/m1/mem_reg[3][0]/CLK (DFFX1_LVT)        0.00       0.00 r
   u_response_fifo/m1/mem_reg[3][0]/Q (DFFX1_LVT)          0.18       0.18 f
-  U1360/Y (AO22X1_LVT)                                    0.07       0.25 f
+  U1394/Y (AO22X1_LVT)                                    0.07       0.25 f
   u_response_fifo/m1/mem_reg[3][0]/D (DFFX1_LVT)          0.00       0.25 f
   data arrival time                                                  0.25
 
@@ -1187,9 +1186,9 @@ Wire Load Model Mode: enclosed
   slack (MET)                                                        0.14
 
 
-  Startpoint: u_response_fifo/m1/mem_reg[3][13]
+  Startpoint: u_response_fifo/m1/mem_reg[2][30]
               (rising edge-triggered flip-flop clocked by slow_clk)
-  Endpoint: u_response_fifo/m1/mem_reg[3][13]
+  Endpoint: u_response_fifo/m1/mem_reg[2][30]
             (rising edge-triggered flip-flop clocked by slow_clk)
   Path Group: slow_clk
   Path Type: min
@@ -1202,16 +1201,16 @@ Wire Load Model Mode: enclosed
   --------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_response_fifo/m1/mem_reg[3][13]/CLK (DFFX1_LVT)       0.00       0.00 r
-  u_response_fifo/m1/mem_reg[3][13]/Q (DFFX1_LVT)         0.18       0.18 f
-  U1379/Y (AO22X1_LVT)                                    0.07       0.25 f
-  u_response_fifo/m1/mem_reg[3][13]/D (DFFX1_LVT)         0.00       0.25 f
+  u_response_fifo/m1/mem_reg[2][30]/CLK (DFFX1_LVT)       0.00       0.00 r
+  u_response_fifo/m1/mem_reg[2][30]/Q (DFFX1_LVT)         0.18       0.18 f
+  U1428/Y (AO22X1_LVT)                                    0.07       0.25 f
+  u_response_fifo/m1/mem_reg[2][30]/D (DFFX1_LVT)         0.00       0.25 f
   data arrival time                                                  0.25
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_response_fifo/m1/mem_reg[3][13]/CLK (DFFX1_LVT)       0.00       0.14 r
+  u_response_fifo/m1/mem_reg[2][30]/CLK (DFFX1_LVT)       0.00       0.14 r
   library hold time                                      -0.03       0.11
   data required time                                                 0.11
   --------------------------------------------------------------------------
@@ -1221,9 +1220,9 @@ Wire Load Model Mode: enclosed
   slack (MET)                                                        0.14
 
 
-  Startpoint: u_response_fifo/m1/mem_reg[3][12]
+  Startpoint: u_response_fifo/m1/mem_reg[2][19]
               (rising edge-triggered flip-flop clocked by slow_clk)
-  Endpoint: u_response_fifo/m1/mem_reg[3][12]
+  Endpoint: u_response_fifo/m1/mem_reg[2][19]
             (rising edge-triggered flip-flop clocked by slow_clk)
   Path Group: slow_clk
   Path Type: min
@@ -1236,16 +1235,16 @@ Wire Load Model Mode: enclosed
   --------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_response_fifo/m1/mem_reg[3][12]/CLK (DFFX1_LVT)       0.00       0.00 r
-  u_response_fifo/m1/mem_reg[3][12]/Q (DFFX1_LVT)         0.18       0.18 f
-  U1380/Y (AO22X1_LVT)                                    0.07       0.25 f
-  u_response_fifo/m1/mem_reg[3][12]/D (DFFX1_LVT)         0.00       0.25 f
+  u_response_fifo/m1/mem_reg[2][19]/CLK (DFFX1_LVT)       0.00       0.00 r
+  u_response_fifo/m1/mem_reg[2][19]/Q (DFFX1_LVT)         0.18       0.18 f
+  U1439/Y (AO22X1_LVT)                                    0.07       0.25 f
+  u_response_fifo/m1/mem_reg[2][19]/D (DFFX1_LVT)         0.00       0.25 f
   data arrival time                                                  0.25
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_response_fifo/m1/mem_reg[3][12]/CLK (DFFX1_LVT)       0.00       0.14 r
+  u_response_fifo/m1/mem_reg[2][19]/CLK (DFFX1_LVT)       0.00       0.14 r
   library hold time                                      -0.03       0.11
   data required time                                                 0.11
   --------------------------------------------------------------------------
@@ -1255,9 +1254,9 @@ Wire Load Model Mode: enclosed
   slack (MET)                                                        0.14
 
 
-  Startpoint: u_response_fifo/m1/mem_reg[3][5]
+  Startpoint: u_response_fifo/m1/mem_reg[2][16]
               (rising edge-triggered flip-flop clocked by slow_clk)
-  Endpoint: u_response_fifo/m1/mem_reg[3][5]
+  Endpoint: u_response_fifo/m1/mem_reg[2][16]
             (rising edge-triggered flip-flop clocked by slow_clk)
   Path Group: slow_clk
   Path Type: min
@@ -1270,16 +1269,16 @@ Wire Load Model Mode: enclosed
   --------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_response_fifo/m1/mem_reg[3][5]/CLK (DFFX1_LVT)        0.00       0.00 r
-  u_response_fifo/m1/mem_reg[3][5]/Q (DFFX1_LVT)          0.18       0.18 f
-  U1387/Y (AO22X1_LVT)                                    0.07       0.25 f
-  u_response_fifo/m1/mem_reg[3][5]/D (DFFX1_LVT)          0.00       0.25 f
+  u_response_fifo/m1/mem_reg[2][16]/CLK (DFFX1_LVT)       0.00       0.00 r
+  u_response_fifo/m1/mem_reg[2][16]/Q (DFFX1_LVT)         0.18       0.18 f
+  U1442/Y (AO22X1_LVT)                                    0.07       0.25 f
+  u_response_fifo/m1/mem_reg[2][16]/D (DFFX1_LVT)         0.00       0.25 f
   data arrival time                                                  0.25
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_response_fifo/m1/mem_reg[3][5]/CLK (DFFX1_LVT)        0.00       0.14 r
+  u_response_fifo/m1/mem_reg[2][16]/CLK (DFFX1_LVT)       0.00       0.14 r
   library hold time                                      -0.03       0.11
   data required time                                                 0.11
   --------------------------------------------------------------------------
@@ -1289,9 +1288,9 @@ Wire Load Model Mode: enclosed
   slack (MET)                                                        0.14
 
 
-  Startpoint: u_response_fifo/m1/mem_reg[3][3]
+  Startpoint: u_response_fifo/m1/mem_reg[2][13]
               (rising edge-triggered flip-flop clocked by slow_clk)
-  Endpoint: u_response_fifo/m1/mem_reg[3][3]
+  Endpoint: u_response_fifo/m1/mem_reg[2][13]
             (rising edge-triggered flip-flop clocked by slow_clk)
   Path Group: slow_clk
   Path Type: min
@@ -1304,16 +1303,16 @@ Wire Load Model Mode: enclosed
   --------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_response_fifo/m1/mem_reg[3][3]/CLK (DFFX1_LVT)        0.00       0.00 r
-  u_response_fifo/m1/mem_reg[3][3]/Q (DFFX1_LVT)          0.18       0.18 f
-  U1389/Y (AO22X1_LVT)                                    0.07       0.25 f
-  u_response_fifo/m1/mem_reg[3][3]/D (DFFX1_LVT)          0.00       0.25 f
+  u_response_fifo/m1/mem_reg[2][13]/CLK (DFFX1_LVT)       0.00       0.00 r
+  u_response_fifo/m1/mem_reg[2][13]/Q (DFFX1_LVT)         0.18       0.18 f
+  U1445/Y (AO22X1_LVT)                                    0.07       0.25 f
+  u_response_fifo/m1/mem_reg[2][13]/D (DFFX1_LVT)         0.00       0.25 f
   data arrival time                                                  0.25
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_response_fifo/m1/mem_reg[3][3]/CLK (DFFX1_LVT)        0.00       0.14 r
+  u_response_fifo/m1/mem_reg[2][13]/CLK (DFFX1_LVT)       0.00       0.14 r
   library hold time                                      -0.03       0.11
   data required time                                                 0.11
   --------------------------------------------------------------------------
@@ -1323,9 +1322,9 @@ Wire Load Model Mode: enclosed
   slack (MET)                                                        0.14
 
 
-  Startpoint: u_response_fifo/m1/mem_reg[3][2]
+  Startpoint: u_response_fifo/m1/mem_reg[2][10]
               (rising edge-triggered flip-flop clocked by slow_clk)
-  Endpoint: u_response_fifo/m1/mem_reg[3][2]
+  Endpoint: u_response_fifo/m1/mem_reg[2][10]
             (rising edge-triggered flip-flop clocked by slow_clk)
   Path Group: slow_clk
   Path Type: min
@@ -1338,16 +1337,16 @@ Wire Load Model Mode: enclosed
   --------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_response_fifo/m1/mem_reg[3][2]/CLK (DFFX1_LVT)        0.00       0.00 r
-  u_response_fifo/m1/mem_reg[3][2]/Q (DFFX1_LVT)          0.18       0.18 f
-  U1390/Y (AO22X1_LVT)                                    0.07       0.25 f
-  u_response_fifo/m1/mem_reg[3][2]/D (DFFX1_LVT)          0.00       0.25 f
+  u_response_fifo/m1/mem_reg[2][10]/CLK (DFFX1_LVT)       0.00       0.00 r
+  u_response_fifo/m1/mem_reg[2][10]/Q (DFFX1_LVT)         0.18       0.18 f
+  U1448/Y (AO22X1_LVT)                                    0.07       0.25 f
+  u_response_fifo/m1/mem_reg[2][10]/D (DFFX1_LVT)         0.00       0.25 f
   data arrival time                                                  0.25
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_response_fifo/m1/mem_reg[3][2]/CLK (DFFX1_LVT)        0.00       0.14 r
+  u_response_fifo/m1/mem_reg[2][10]/CLK (DFFX1_LVT)       0.00       0.14 r
   library hold time                                      -0.03       0.11
   data required time                                                 0.11
   --------------------------------------------------------------------------
@@ -1374,7 +1373,7 @@ Wire Load Model Mode: enclosed
   clock network delay (ideal)                             0.00       0.00
   u_response_fifo/m1/mem_reg[3][1]/CLK (DFFX1_LVT)        0.00       0.00 r
   u_response_fifo/m1/mem_reg[3][1]/Q (DFFX1_LVT)          0.18       0.18 f
-  U1391/Y (AO22X1_LVT)                                    0.07       0.25 f
+  U1425/Y (AO22X1_LVT)                                    0.07       0.25 f
   u_response_fifo/m1/mem_reg[3][1]/D (DFFX1_LVT)          0.00       0.25 f
   data arrival time                                                  0.25
 
