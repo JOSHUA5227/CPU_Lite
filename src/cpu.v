@@ -89,7 +89,7 @@ module cpu #(
     // CPU CORE
     // ============================================================
 
-    cpu_core #(
+    cpu_core_pipelined #(
         .PROG_ADDR_WIDTH(PROG_ADDR_WIDTH),
         .DATA_ADDR_WIDTH(DATA_ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH)
