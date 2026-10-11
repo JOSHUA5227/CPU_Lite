@@ -11,6 +11,7 @@ input wire rst_n,
 // program memory ports
 input wire [DATA_WIDTH-1:0] instruction,
 output reg [PROG_ADDR_WIDTH-1:0] pc,
+output wire read_en,
 
 //Cache Ports
 input wire [DATA_WIDTH-1:0] rdata,
@@ -143,6 +144,8 @@ reg wb_write;
 reg wb_cache_req;
 reg wb_valid;
 
+assign read_en = !stall_en && !fetch_stall;
+
 //Fetch Pipeline
 always@(posedge clk or negedge rst_n)
 begin
@@ -155,7 +158,7 @@ begin
   else if(!stall_en && !fetch_stall)
   begin
     fetch_instruct <= instruction;
-    fetch_valid <= (fetch_en) ? 1 : 0;
+    fetch_valid <= (fetch_en ) ? 1 : 0;
     fetch_pc <= pc;
   end
 end
@@ -253,8 +256,12 @@ begin
     psr[2] <= (exe_flags_write[2]) ? C : psr[2]; 
     psr[3] <= (exe_flags_write[3]) ? V : psr[3]; 
   
-    pc <= (exe_branch_update) ? exe_out_pc: pc + 1;
-    exe_valid <= (exe_en) ? decode_valid : 0;
+    if(exe_branch_update)
+       pc <= exe_out_pc;
+    else if(!fetch_stall)
+       pc <= pc + 1;
+
+    exe_valid <= (exe_en && !exe_branch_update) ? decode_valid : 0;
   end
 end
 

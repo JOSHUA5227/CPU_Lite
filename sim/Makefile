@@ -9,7 +9,7 @@ COMPILE_ARGS += -g2012
 
 VERILOG_SOURCES = \
     $(PWD)/../src/cpu.v \
-    $(PWD)/../src/cpu_core.v \
+    $(PWD)/../src/cpu_core_pipelined.v \
     $(PWD)/../src/program_memory.v \
     $(PWD)/../src/cache.v \
     $(PWD)/../src/async_fifo/async_fifo.v \
