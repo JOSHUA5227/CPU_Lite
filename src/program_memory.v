@@ -5,6 +5,7 @@ parameter DATA_WIDTH = 32
 input wire clk,
 input wire rst_n,
 
+input wire read_en,
 input wire [ADDR_WIDTH-1:0] addr,
 output reg [DATA_WIDTH-1:0] wdata
 );
@@ -16,7 +17,7 @@ always@(posedge clk or negedge rst_n)
 begin
   if(!rst_n)
     wdata <= 0;
-  else
+  else if(read_en)
     wdata <= mem[addr];
 end
 endmodule

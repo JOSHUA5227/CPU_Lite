@@ -30,7 +30,7 @@ module cpu #(
 
     wire [PROG_ADDR_WIDTH-1:0] cpu_pc;
     wire [DATA_WIDTH-1:0] instruction;
-
+    wire cpu_read_en;
 
     // ============================================================
     // CPU <-> CACHE
@@ -99,6 +99,7 @@ module cpu #(
 
         .instruction (instruction),
         .pc          (cpu_pc),
+        .read_en     (cpu_read_en),
 
         .rdata       (cpu_rdata),
         .cpu_ready   (cpu_ready),
@@ -122,7 +123,8 @@ module cpu #(
         .rst_n  (fast_rst_n),
 
         .addr  (cpu_pc),
-        .wdata (instruction)
+        .wdata (instruction),
+        .read_en (cpu_read_en)
     );
 
 
