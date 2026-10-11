@@ -109,10 +109,9 @@ reg decode_valid;
 // EXECUTE/MEMORY Registers
 reg [PROG_ADDR_WIDTH-1:0] exe_pc,exe_out_pc;
 reg [7:0] exe_opcode;
-reg [3:0] exe_rs1,exe_rs2,exe_rd;
+reg [3:0] exe_rd;
 reg [11:0] exe_imm;
 
-reg exe_read; // Read from R registers, when cache REQ = 1 read from cache
 reg exe_write; // Write to R registers, when cache REQ = 1 write to cache
 reg exe_cache_req; // Wether or not cache is needed
 reg [3:0] exe_flags_write;
@@ -125,13 +124,11 @@ reg [DATA_WIDTH-1:0] exe_result_op; // NON alu operations if needed
 reg exe_valid;
 
 // EXECUTE/MEMORY Registers
-reg [PROG_ADDR_WIDTH-1:0] mem_pc;
 reg [3:0] mem_rd;
 
 reg [DATA_ADDR_WIDTH-1:0] mem_addr;
 reg [DATA_WIDTH-1:0] mem_wdata;
 
-reg mem_read;
 reg mem_write;
 reg mem_cache_req;
 
@@ -139,7 +136,6 @@ reg [DATA_WIDTH-1:0] mem_res;
 reg mem_valid;
 
 // MEMORY/WRITEBACK Registers
-reg [PROG_ADDR_WIDTH-1:0] wb_pc;
 reg [DATA_WIDTH-1:0] wb_res;
 reg [3:0] wb_rd;
 
@@ -232,8 +228,6 @@ begin
   begin
     exe_pc <= 0;
     exe_opcode <= 0;
-    exe_rs1 <= 0;
-    exe_rs2 <= 0;
     exe_rd <= 0;
     exe_imm <= 0; 
      
@@ -248,8 +242,6 @@ begin
   begin
     exe_pc <= decode_pc;
     exe_opcode <= decode_opcode;
-    exe_rs1 <= decode_rs1;
-    exe_rs2 <= decode_rs2;
     exe_rd <= decode_rd;
     exe_imm <= decode_imm;
     
@@ -536,7 +528,6 @@ end
 //Read Write Enabling
 always@(*)
 begin
-  exe_read = 0;
   exe_write = 0;
   exe_cache_req = 0;
   if(exe_valid)
@@ -544,31 +535,26 @@ begin
     case(exe_opcode)
     ADD,SUB,MUL,OP_AND,OP_OR,OP_XOR,OP_NOT,EQ,SHL,SHR,SAR,OP_ROL,OP_ROR,ADDI,SUBI,ANDI,ORI,XORI,SLT,SLTU,MOV:
     begin
-      exe_read = 1;
       exe_write = 1;
       exe_cache_req = 0;
     end 
     LOAD_IMM,LUI:
     begin
-      exe_read = 0;
       exe_write = 1;
       exe_cache_req = 0;
     end
     LOAD,LOAD_IND:
     begin
-      exe_read = 1;
       exe_write = 0;
       exe_cache_req = 1;
     end
     STORE,STORE_IND:
     begin
-      exe_read = 0;
       exe_write = 1;
       exe_cache_req = 1;
     end
     default:
     begin
-      exe_read = 0;
       exe_write = 0;
       exe_cache_req = 0;
     end 
@@ -581,13 +567,11 @@ always@(posedge clk or negedge rst_n)
 begin
   if(!rst_n)
   begin
-    mem_pc <= 0;
     mem_rd <= 0; 
 
     mem_addr <= 0; 
     mem_wdata <= 0;
 
-    mem_read <= 0;
     mem_write <= 0;
     mem_cache_req <= 0;
 
@@ -596,7 +580,6 @@ begin
   end
   else if(!stall_en)
   begin
-    mem_pc <= exe_out_pc;
     mem_rd <= exe_rd; 
   
     case(exe_opcode)
@@ -611,7 +594,6 @@ begin
     default: mem_wdata <= 0;
     endcase
 
-    mem_read <= exe_read;
     mem_write <= exe_write;
     mem_cache_req <= exe_cache_req;
 
@@ -648,7 +630,6 @@ always@(posedge clk or negedge rst_n)
 begin
   if(!rst_n)
   begin
-    wb_pc <= 0;
     wb_res <= 0;
     wb_rd <= 0;
 
@@ -658,7 +639,6 @@ begin
   end
   else if(!stall_en)
   begin
-    wb_pc <= mem_pc;
     wb_rd <= mem_rd;
     
     wb_write <= mem_write;
