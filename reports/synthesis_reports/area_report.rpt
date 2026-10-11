@@ -3,7 +3,7 @@
 Report : area
 Design : cpu_interface
 Version: S-2021.06-SP4
-Date   : Wed Sep 30 11:19:56 2026
+Date   : Sun Oct 11 22:26:36 2026
 ****************************************
 
 Information: Updating design information... (UID-85)
@@ -13,20 +13,20 @@ Library(s) Used:
     saed32lvt_ss0p75v25c (File: /fetools/work_area/frontend/SAED32_EDK/lib/stdcell_lvt/db_nldm/saed32lvt_ss0p75v25c.db)
 
 Number of ports:                          422
-Number of nets:                         12154
-Number of cells:                        11201
-Number of combinational cells:           8884
-Number of sequential cells:              2315
+Number of nets:                         13205
+Number of cells:                        12368
+Number of combinational cells:           9849
+Number of sequential cells:              2516
 Number of macros/black boxes:               0
-Number of buf/inv:                        661
-Number of references:                      26
+Number of buf/inv:                        995
+Number of references:                      27
 
-Combinational area:              22770.539916
-Buf/Inv area:                      973.625662
-Noncombinational area:           15715.757097
+Combinational area:              23995.768191
+Buf/Inv area:                     1379.493633
+Noncombinational area:           17165.902782
 Macro/Black Box area:                0.000000
-Net Interconnect area:           18031.263852
+Net Interconnect area:           18839.435232
 
-Total cell area:                 38486.297013
-Total area:                      56517.560865
+Total cell area:                 41161.670973
+Total area:                      60001.106206
 1
