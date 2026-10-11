@@ -65,7 +65,7 @@ wire [OFFSET_BITS-1:0] refill_resp_index;
 assign refill_resp_index = refill_resp_count[OFFSET_BITS-1:0];
 
 wire [OFFSET_BITS-1:0] writeback_req_index;
-assign writeback_req_index = refill_resp_count[OFFSET_BITS-1:0];
+assign writeback_req_index = writeback_req_count[OFFSET_BITS-1:0];
 
 localparam IDLE = 3'd0;
 localparam LOOKUP = 3'd1;

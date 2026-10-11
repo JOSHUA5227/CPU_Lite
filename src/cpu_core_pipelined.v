@@ -618,7 +618,6 @@ begin
     case(exe_opcode)
     ADD,SUB,MUL,OP_AND,OP_OR,OP_XOR,OP_NOT,EQ,SHL,SHR,SAR,OP_ROL,OP_ROR,ADDI,SUBI,ANDI,ORI,XORI,SLT,SLTU : mem_res <= exe_alu_res[DATA_WIDTH-1:0];  
     LOAD_IMM,LUI,MOV: mem_res <= exe_result_op;
-    LOAD,LOAD_IND: mem_res <= rdata;
     default: mem_res <= 0;
     endcase
   
@@ -664,7 +663,11 @@ begin
     
     wb_write <= mem_write;
     wb_cache_req <= mem_cache_req;
-    wb_res <= mem_res;
+    
+    if(mem_cache_req && !mem_write)
+      wb_res <= rdata;
+    else
+      wb_res <=mem_res;
 
     wb_valid <= mem_valid;
   end
@@ -854,13 +857,19 @@ begin
 // MEM forwarding
   if(decode_valid && mem_valid && mem_hazard_R_dependency && (hazard_mem_rs1 || hazard_mem_rd)) 
   begin
-    forward_mem_op_a = mem_res;
+    if(mem_cache_req && !mem_write && cpu_ready)
+        forward_mem_op_a = rdata;
+    else
+        forward_mem_op_a = mem_res;
     forward_mem_a_en = 1;
   end
 
   if(decode_valid && mem_valid && mem_hazard_R_dependency && hazard_mem_rs2)
   begin
-    forward_mem_op_b = mem_res;
+    if(mem_cache_req && !mem_write && cpu_ready)
+        forward_mem_op_b = rdata;
+    else
+        forward_mem_op_b = mem_res;
     forward_mem_b_en = 1;
   end
 
