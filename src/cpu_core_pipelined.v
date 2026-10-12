@@ -67,8 +67,9 @@ localparam CALL = 8'h27;
 localparam RET = 8'h28;
 
 
-reg [DATA_WIDTH-1:0] R [0:15];
+reg [DATA_WIDTH-1:0] R [0:15]; // R15 as Link Register
 reg [3:0] psr;
+reg [DATA_ADDR_WIDTH-1:0] stack_pointer;
 
 // Hazard Units Signals 
 wire stall_en;
@@ -102,7 +103,6 @@ wire [3:0] decode_rs1,decode_rs2,decode_rd;
 wire [7:0] decode_opcode;
 wire [11:0] decode_imm;
 
-assign {decode_opcode,decode_rd,decode_rs1,decode_rs2,decode_imm} = decode_instruct;
 
 reg [DATA_WIDTH-1:0] decode_op_a,decode_op_b;
 reg decode_valid;
@@ -115,6 +115,7 @@ reg [11:0] exe_imm;
 
 reg exe_write; // Write to R registers, when cache REQ = 1 write to cache
 reg exe_cache_req; // Wether or not cache is needed
+reg exe_call_req; // specifically for call
 reg [3:0] exe_flags_write;
 reg Z,N,C,V;
 reg exe_branch_update;
@@ -132,6 +133,7 @@ reg [DATA_WIDTH-1:0] mem_wdata;
 
 reg mem_write;
 reg mem_cache_req;
+reg mem_call_req; // specifically for call
 
 reg [DATA_WIDTH-1:0] mem_res;
 reg mem_valid;
@@ -142,6 +144,8 @@ reg [3:0] wb_rd;
 
 reg wb_write;
 reg wb_cache_req;
+reg wb_call_req;
+
 reg wb_valid;
 
 assign read_en = !stall_en && !fetch_stall;
@@ -164,6 +168,13 @@ begin
 end
 
 //Decode Pipeline
+assign decode_imm = decode_instruct[11:0];
+assign decode_rs2 = decode_instruct[15:12];
+assign decode_rs1 = decode_instruct[19:16];
+assign decode_opcode = decode_instruct[31:24];
+
+assign decode_rd = (decode_opcode == CALL || decode_opcode == RET ) ? 4'hF: decode_instruct[23:20];
+
 always@(posedge clk or negedge rst_n)
 begin
   if(!rst_n)
@@ -213,6 +224,14 @@ begin
      begin
        decode_op_a = R[decode_rd];
        decode_op_b = R[decode_rs2];
+     end
+     CALL:
+     begin
+      decode_op_a = R[decode_rd];
+     end
+     RET:
+     begin
+        decode_op_a = R[decode_rd];
      end
      default:
      begin
@@ -332,7 +351,6 @@ begin
       exe_flags_write = 4'b0011;
     end
 
-
     SHL:
     begin
       exe_alu_res[31:0] = exe_op_a << exe_op_b[4:0];
@@ -428,6 +446,7 @@ begin
     LOAD_IMM:exe_result_op = {{DATA_WIDTH-12{1'b0}},exe_imm};
     MOV: exe_result_op = exe_op_a;
     LUI: exe_result_op = {exe_imm,20'b0};
+    CALL,RET: exe_result_op = exe_op_a;
     default: exe_result_op = 0;
     endcase
   end
@@ -507,6 +526,16 @@ begin
            exe_out_pc = exe_op_a[PROG_ADDR_WIDTH-1:0];
            exe_branch_update = 1;  
        end
+       CALL:
+       begin
+          exe_out_pc = exe_imm;
+          exe_branch_update = 1;
+       end
+       RET:
+       begin
+         exe_out_pc = exe_op_a[PROG_ADDR_WIDTH-1:0];
+         exe_branch_update = 1;
+       end
        default:
        begin
         exe_out_pc =  exe_pc; 
@@ -537,6 +566,7 @@ always@(*)
 begin
   exe_write = 0;
   exe_cache_req = 0;
+  exe_call_req = 0;
   if(exe_valid)
   begin
     case(exe_opcode)
@@ -560,10 +590,22 @@ begin
       exe_write = 1;
       exe_cache_req = 1;
     end
+    CALL:
+    begin
+      exe_write = 1;
+      exe_cache_req = 1;
+      exe_call_req = 1;
+    end
+    RET:
+    begin
+      exe_write = 0;
+      exe_cache_req = 1;
+    end
     default:
     begin
       exe_write = 0;
       exe_cache_req = 0;
+      exe_call_req = 0;
     end 
     endcase
   end
@@ -581,6 +623,9 @@ begin
 
     mem_write <= 0;
     mem_cache_req <= 0;
+    mem_call_req <= 0;
+  
+    stack_pointer <= STACK_START;
 
     mem_res <= 0;
     mem_valid <= 0;
@@ -593,23 +638,40 @@ begin
     LOAD,STORE: mem_addr <= { {DATA_ADDR_WIDTH-12{1'b0}},exe_imm};
     LOAD_IND: mem_addr <= exe_op_a[DATA_ADDR_WIDTH-1:0];
     STORE_IND: mem_addr <= exe_op_b[DATA_ADDR_WIDTH-1:0];
+    CALL: mem_addr <= stack_pointer;
+    RET: mem_addr <= stack_pointer + 1;
     default: mem_addr <= 0;
     endcase
 
+   
     case(exe_opcode)
     STORE,STORE_IND: mem_wdata <= exe_op_a; 
+    CALL: mem_wdata <= exe_result_op;
     default: mem_wdata <= 0;
     endcase
 
     mem_write <= exe_write;
     mem_cache_req <= exe_cache_req;
+    mem_call_req <= exe_call_req;
+    
+    if(exe_valid)
+    begin
+      case(exe_opcode)
+      ADD,SUB,MUL,OP_AND,OP_OR,OP_XOR,OP_NOT,EQ,SHL,SHR,SAR,OP_ROL,OP_ROR,ADDI,SUBI,ANDI,ORI,XORI,SLT,SLTU : mem_res <= exe_alu_res[DATA_WIDTH-1:0];  
+      LOAD_IMM,LUI,MOV: mem_res <= exe_result_op;
+      CALL: mem_res <= exe_pc + 1;
+      default: mem_res <= 0;
+      endcase
+    end
+    if(exe_valid)
+    begin
+      case(exe_opcode)
+      CALL: stack_pointer <= (stack_pointer > STACK_LIMIT) ? stack_pointer - 1 : stack_pointer;
+      RET:  stack_pointer <= (stack_pointer < STACK_START) ? stack_pointer + 1 : stack_pointer; 
+      default: stack_pointer <= stack_pointer;
+      endcase
+    end
 
-    case(exe_opcode)
-    ADD,SUB,MUL,OP_AND,OP_OR,OP_XOR,OP_NOT,EQ,SHL,SHR,SAR,OP_ROL,OP_ROR,ADDI,SUBI,ANDI,ORI,XORI,SLT,SLTU : mem_res <= exe_alu_res[DATA_WIDTH-1:0];  
-    LOAD_IMM,LUI,MOV: mem_res <= exe_result_op;
-    default: mem_res <= 0;
-    endcase
-  
     mem_valid <= exe_valid;
   end
 end
@@ -642,6 +704,7 @@ begin
 
     wb_write <= 0;
     wb_cache_req <= 0;
+    wb_call_req <= 0;
     wb_valid <= 0;
   end
   else if(!stall_en)
@@ -650,6 +713,7 @@ begin
     
     wb_write <= mem_write;
     wb_cache_req <= mem_cache_req;
+    wb_call_req <= mem_call_req;
     
     if(mem_cache_req && !mem_write)
       wb_res <= rdata;
@@ -670,7 +734,9 @@ begin
   end
   else if(!stall_en && wb_valid)
   begin
-      if(wb_write && !wb_cache_req)
+      if(wb_call_req)
+         R[wb_rd] <= wb_res;
+      else if(wb_write && !wb_cache_req)
          R[wb_rd] <= wb_res;
       else if(!wb_write && wb_cache_req)
          R[wb_rd] <= wb_res;
@@ -718,7 +784,7 @@ begin
 end
 
 wire exe_hazard_R_dependency;
-assign exe_hazard_R_dependency = (!exe_write && exe_cache_req) || (exe_write && !exe_cache_req) ;
+assign exe_hazard_R_dependency = (!exe_write && exe_cache_req) || (exe_write && !exe_cache_req)  || exe_call_req;
 
 wire hazard_exe_rs1;
 assign hazard_exe_rs1 = hazard_decode_rs1_en && (exe_rd == decode_rs1);
@@ -730,11 +796,19 @@ wire hazard_exe_rd;
 assign hazard_exe_rd = hazard_decode_rd_source && (exe_rd == decode_rd);
 
 wire hazard_exe_any;
-assign hazard_exe_any = hazard_exe_rs1 || hazard_exe_rs2 || hazard_exe_rd;
+assign hazard_exe_any = hazard_exe_rs1 || hazard_exe_rs2 || hazard_exe_rd || exe_hazard_ret;
 
+wire exe_hazard_ret;
+assign exe_hazard_ret = (decode_opcode == RET) && (exe_rd == 4'hF);
+
+wire mem_hazard_ret;
+assign mem_hazard_ret = (decode_opcode == RET) && (mem_rd == 4'hF);
+
+wire wb_hazard_ret;
+assign wb_hazard_ret = (decode_opcode == RET) && (wb_rd == 4'hF);
 
 wire mem_hazard_R_dependency;
-assign mem_hazard_R_dependency = (!mem_write && mem_cache_req) || (mem_write && !mem_cache_req) ;
+assign mem_hazard_R_dependency = (!mem_write && mem_cache_req) || (mem_write && !mem_cache_req) || mem_call_req;
 
 wire hazard_mem_rs1;
 assign hazard_mem_rs1 = hazard_decode_rs1_en && (mem_rd == decode_rs1);
@@ -747,7 +821,7 @@ assign hazard_mem_rd = hazard_decode_rd_source && (mem_rd == decode_rd);
 
 
 wire wb_hazard_R_dependency;
-assign wb_hazard_R_dependency = (!wb_write && wb_cache_req) || (wb_write && !wb_cache_req) ;
+assign wb_hazard_R_dependency = (!wb_write && wb_cache_req) || (wb_write && !wb_cache_req) || wb_call_req;
 
 wire hazard_wb_rs1;
 assign hazard_wb_rs1 = hazard_decode_rs1_en && (wb_rd == decode_rs1);
@@ -783,7 +857,7 @@ begin
   if(decode_valid && exe_valid && exe_hazard_R_dependency && hazard_exe_any) 
   begin
     case(exe_opcode)
-    LOAD,LOAD_IND:
+    LOAD,LOAD_IND,RET:
     begin
       exe_en = 0;
       fetch_stall = 1;
@@ -799,7 +873,7 @@ begin
   end
 
 // EXECUTE forwarding
-  if(decode_valid && exe_valid && exe_hazard_R_dependency && (hazard_exe_rs1 || hazard_exe_rd)) 
+  if(decode_valid && exe_valid && exe_hazard_R_dependency && (hazard_exe_rs1 || hazard_exe_rd || exe_hazard_ret)) 
   begin
     case(exe_opcode)
     ADD,SUB,MUL,OP_AND,OP_OR,OP_XOR,OP_NOT,EQ,SHL,SHR,SAR,OP_ROL,OP_ROR,ADDI,SUBI,ANDI,ORI,XORI,SLT,SLTU :
@@ -812,6 +886,11 @@ begin
       forward_exe_a_en = 1;
       forward_exe_op_a = exe_result_op;
     end
+    CALL:
+    begin
+      forward_exe_a_en = 1;
+      forward_exe_op_a = exe_pc + 1;
+    end
     default: 
     begin
       forward_exe_a_en = 0;
@@ -820,7 +899,7 @@ begin
     endcase
   end
 
-  if(decode_valid && exe_valid && exe_hazard_R_dependency && hazard_exe_rs2)
+  if(decode_valid && exe_valid && exe_hazard_R_dependency && (hazard_exe_rs2)) 
   begin
     case(exe_opcode)
     ADD,SUB,MUL,OP_AND,OP_OR,OP_XOR,OP_NOT,EQ,SHL,SHR,SAR,OP_ROL,OP_ROR,ADDI,SUBI,ANDI,ORI,XORI,SLT,SLTU : 
@@ -828,7 +907,7 @@ begin
       forward_exe_b_en = 1;
       forward_exe_op_b = exe_alu_res[DATA_WIDTH-1:0];  
     end
-    LOAD_IMM,LUI,MOV: 
+    LOAD_IMM,LUI,MOV,CALL: 
     begin
     forward_exe_b_en = 1;
     forward_exe_op_b = exe_result_op;
@@ -842,7 +921,7 @@ begin
   end
 
 // MEM forwarding
-  if(decode_valid && mem_valid && mem_hazard_R_dependency && (hazard_mem_rs1 || hazard_mem_rd)) 
+  if(decode_valid && mem_valid && mem_hazard_R_dependency && (hazard_mem_rs1 || hazard_mem_rd || mem_hazard_ret)) 
   begin
     if(mem_cache_req && !mem_write && cpu_ready)
         forward_mem_op_a = rdata;
@@ -851,7 +930,7 @@ begin
     forward_mem_a_en = 1;
   end
 
-  if(decode_valid && mem_valid && mem_hazard_R_dependency && hazard_mem_rs2)
+  if(decode_valid && mem_valid && mem_hazard_R_dependency && (hazard_mem_rs2))
   begin
     if(mem_cache_req && !mem_write && cpu_ready)
         forward_mem_op_b = rdata;
@@ -861,13 +940,13 @@ begin
   end
 
 //WRITEBACK forwarding
-  if(decode_valid && wb_valid && wb_hazard_R_dependency && (hazard_wb_rs1 || hazard_wb_rd)) 
+  if(decode_valid && wb_valid && wb_hazard_R_dependency && (hazard_wb_rs1 || hazard_wb_rd || wb_hazard_ret)) 
   begin
     forward_wb_op_a = wb_res;
     forward_wb_a_en = 1;
   end
 
-  if(decode_valid && wb_valid && wb_hazard_R_dependency && hazard_wb_rs2)
+  if(decode_valid && wb_valid && wb_hazard_R_dependency && (hazard_wb_rs2))
   begin
     forward_wb_op_b = wb_res;
     forward_wb_b_en = 1;
@@ -898,3 +977,4 @@ begin
       forward_final_b = decode_op_b;
 end
 endmodule
+
