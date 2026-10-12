@@ -10,6 +10,7 @@ input wire rst_n,
 
 // program memory ports
 input wire [DATA_WIDTH-1:0] instruction,
+input wire [DATA_WIDTH-1:0] instruct_addr,
 output reg [PROG_ADDR_WIDTH-1:0] pc,
 output wire read_en,
 
@@ -163,7 +164,7 @@ begin
   begin
     fetch_instruct <= instruction;
     fetch_valid <= (fetch_en ) ? 1 : 0;
-    fetch_pc <= pc;
+    fetch_pc <= instruct_addr;
   end
 end
 
@@ -181,6 +182,10 @@ begin
   begin
     decode_pc <= 0;
     decode_instruct <= 0;
+    decode_valid <= 0;
+  end
+  else if(exe_branch_update && !stall_en)
+  begin
     decode_valid <= 0;
   end
   else if(!stall_en && !decode_stall)
@@ -258,7 +263,6 @@ begin
     
     psr <= 0;
     pc <= 0;
-    exe_valid <= 0;
   end
   else if(!stall_en)
   begin
@@ -280,8 +284,17 @@ begin
     else if(!fetch_stall)
        pc <= pc + 1;
 
-    exe_valid <= (exe_en && !exe_branch_update) ? decode_valid : 0;
   end
+end
+
+always@(posedge clk or negedge rst_n)
+begin
+  if(!rst_n)
+    exe_valid <=0;
+  else if (exe_branch_update && !stall_en)
+    exe_valid <= 0;
+  else if(!stall_en) 
+    exe_valid <= (exe_en ) ? decode_valid : 0;
 end
 
 always@(*)
@@ -646,7 +659,7 @@ begin
    
     case(exe_opcode)
     STORE,STORE_IND: mem_wdata <= exe_op_a; 
-    CALL: mem_wdata <= exe_result_op;
+    CALL: mem_wdata <= exe_pc + 1;
     default: mem_wdata <= 0;
     endcase
 
