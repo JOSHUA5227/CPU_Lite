@@ -7,7 +7,7 @@ analyze -f verilog ../src/async_fifo/async_fifo.v
 
 analyze -f verilog ../src/memory_controller.v
 analyze -f verilog ../src/cache.v
-analyze -f verilog ../src/cpu_core.v
+analyze -f verilog ../src/cpu_core_pipelined.v
 analyze -f verilog ../src/cpu.v
 #analyze -f verilog ../src/program_memory.v
 #analyze -f verilog ../src/data_memory.v
