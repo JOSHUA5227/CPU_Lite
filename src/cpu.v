@@ -29,6 +29,7 @@ module cpu #(
     // ============================================================
 
     wire [PROG_ADDR_WIDTH-1:0] cpu_pc;
+    wire [PROG_ADDR_WIDTH-1:0] cpu_instruct_addr;
     wire [DATA_WIDTH-1:0] instruction;
     wire cpu_read_en;
 
@@ -100,6 +101,7 @@ module cpu #(
         .instruction (instruction),
         .pc          (cpu_pc),
         .read_en     (cpu_read_en),
+        .instruct_addr (cpu_instruct_addr),
 
         .rdata       (cpu_rdata),
         .cpu_ready   (cpu_ready),
@@ -123,6 +125,7 @@ module cpu #(
         .rst_n  (fast_rst_n),
 
         .addr  (cpu_pc),
+        .instruct_addr (cpu_instruct_addr),
         .wdata (instruction),
         .read_en (cpu_read_en)
     );

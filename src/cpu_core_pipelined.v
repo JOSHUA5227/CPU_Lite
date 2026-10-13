@@ -10,8 +10,8 @@ input wire rst_n,
 
 // program memory ports
 input wire [DATA_WIDTH-1:0] instruction,
-input wire [DATA_WIDTH-1:0] instruct_addr,
 output reg [PROG_ADDR_WIDTH-1:0] pc,
+input wire [PROG_ADDR_WIDTH-1:0] instruct_addr,
 output wire read_en,
 
 //Cache Ports
@@ -76,6 +76,7 @@ reg [DATA_ADDR_WIDTH-1:0] stack_pointer;
 wire stall_en;
 reg fetch_stall,decode_stall;
 reg fetch_en,decode_en,exe_en,mem_en,wb_en;
+reg fetch_kill;
 
 reg hazard_decode_rs1_en,hazard_decode_rs2_en;
 reg hazard_decode_rd_source;
@@ -158,7 +159,18 @@ begin
   begin
     fetch_pc <= 0;
     fetch_instruct <= 0;
+    fetch_kill <= 0;
     fetch_valid <= 0;
+  end
+  else if (exe_branch_update && !stall_en)
+  begin
+    fetch_valid <=0;
+    fetch_kill <= 1;
+  end
+  else if(!stall_en && fetch_kill)
+  begin
+    fetch_valid <= 0;
+    fetch_kill <= 0;
   end
   else if(!stall_en && !fetch_stall)
   begin
@@ -262,7 +274,7 @@ begin
     exe_op_b <= 0;
     
     psr <= 0;
-    pc <= 0;
+    pc <= -1;
   end
   else if(!stall_en)
   begin
@@ -776,7 +788,7 @@ begin
     begin
       hazard_decode_rs1_en = 1;
     end 
-    STORE:
+    STORE,CALL:
     begin
       hazard_decode_rd_source = 1;
     end

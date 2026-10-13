@@ -32,6 +32,8 @@ OP_BGE       = 0x23
 OP_BLTU      = 0x24
 OP_BGEU      = 0x25
 OP_JMP_REG   = 0x26
+OP_CALL      = 0x27
+OP_RET       = 0x28
 
 MASK32 = 0xFFFFFFFF
 PROGRAM_WORDS_TO_CLEAR = 128
@@ -76,6 +78,12 @@ def branch(op, address):
 
 def jmp_reg(rs1):
     return i_type(OP_JMP_REG, 0, rs1, 0)
+
+def call(address):
+    return i_type(OP_CALL, 0, 0, address)
+
+def ret():
+    return i_type(OP_RET, 0, 0, 0)
 
 def add(rd, rs1, rs2):
     return r_type(OP_ADD, rd, rs1, rs2)
@@ -177,6 +185,7 @@ async def reset_and_load(dut, program, memory_init=None):
     dut.fast_rst_n.value = 1
     dut.slow_rst_n.value = 1
     await edge_wait(dut.fast_clk, 5)
+
 
 async def run_case(dut, program, checks, memory_init=None, cycles=500, name="scenario"):
     dut._log.info("")
@@ -473,9 +482,118 @@ async def test_cpu_pipeline_stress(dut):
             checks.reg(f"{name}: not-taken marker", 3, 0x111)
             checks.reg(f"{name}: target successor skipped", 5, 0)
 
+    # ================================================================
+    # 4. CALL / RET
+    # ================================================================
+
+    # Simple call/return: CALL at PC 0 saves PC+1 (=1) to R15 and the stack,
+    # jumps to PC 4, then RET redirects through R15. The RET stack read should
+    # restore the saved link value into R15 and restore the stack pointer.
+    prog = [
+        call(4),                    # 0: call subroutine
+        load_imm(2, 0x111),         # 1: return address; must execute
+        jmp(7),                     # 2: skip subroutine after return
+        load_imm(7, 0xBAD),         # 3: should never execute
+        load_imm(3, 0x222),         # 4: subroutine marker
+        ret(),                      # 5: return via R15
+        load_imm(7, 0xBAD),         # 6: should not execute
+        jmp(7),                     # 7: stop in a loop
+    ]
+    await run_case(dut, prog, checks, cycles=900,
+                   name="CALL/RET: simple call, stack save and link restore")
+    checks.reg("CALL saved return path executed", 2, 0x111)
+    checks.reg("CALL subroutine executed", 3, 0x222)
+    checks.reg("CALL wrong path before target flushed", 7, 0)
+    checks.reg("R15 after simple RET", 15, 1)
+    checks.eq("stack pointer restored after simple RET",
+              sig_value(dut.u_cpu_core.stack_pointer), 0x3FFF)
+    checks.mem("CALL saved return address", 0x3FFF, 1)
+
+    # Nested call/return: outer CALL pushes return address 1; inner CALL pushes
+    # return address 6. After the inner RET, the outer RET must return to PC 1.
+    # This is deliberately included as a stronger test: it will expose whether
+    # RET restores the PREVIOUS link from the stack, rather than reloading the
+    # same return address that the current RET just used.
+    prog = [
+        call(4),                    # 0: main -> function A; saves 1
+        load_imm(2, 0x111),         # 1: outer return marker
+        jmp(12),                    # 2: finish
+        load_imm(7, 0xBAD),         # 3: should not execute
+        load_imm(4, 0x444),         # 4: function A marker
+        call(8),                    # 5: function A -> function B; saves 6
+        load_imm(5, 0x555),         # 6: resume function A after B returns
+        ret(),                      # 7: function A -> main (should use saved 1)
+        load_imm(6, 0x666),         # 8: function B marker
+        ret(),                      # 9: function B -> function A (uses link 6)
+        load_imm(7, 0xBAD),         # 10: should not execute
+        load_imm(7, 0xBAD),         # 11: should not execute
+        jmp(12),                    # 12: finish loop
+    ]
+    await run_case(dut, prog, checks, cycles=1400,
+                   name="CALL/RET: nested calls restore previous link")
+    checks.reg("outer function executed", 4, 0x444)
+    checks.reg("inner function executed", 6, 0x666)
+    checks.reg("inner return resumed outer function", 5, 0x555)
+    checks.reg("outer return resumed main", 2, 0x111)
+    checks.reg("nested CALL wrong path flushed", 7, 0)
+    checks.eq("stack pointer restored after nested RETs",
+              sig_value(dut.u_cpu_core.stack_pointer), 0x3FFF)
+    checks.mem("outer return address remains on stack", 0x3FFF, 1)
+    checks.mem("inner return address remains on stack", 0x3FFE, 6)
+
+    # Two separate calls from main to different subroutines. This checks that
+    # RET returns to the correct call site each time and that the stack is
+    # reusable after a completed call.
+    prog = [
+        call(5),                    # 0: first call saves 1
+        load_imm(2, 0x111),         # 1: first return marker
+        call(8),                    # 2: second call saves 3
+        load_imm(3, 0x333),         # 3: second return marker
+        jmp(11),                    # 4: finish
+        load_imm(4, 0x444),         # 5: first subroutine
+        ret(),                      # 6: return to 1
+        load_imm(7, 0xBAD),         # 7: must not execute
+        load_imm(5, 0x555),         # 8: second subroutine
+        ret(),                      # 9: return to 3
+        load_imm(7, 0xBAD),         # 10: must not execute
+        jmp(11),                    # 11: finish loop
+    ]
+    await run_case(dut, prog, checks, cycles=1200,
+                   name="CALL/RET: two sequential calls from main")
+    checks.reg("first subroutine ran", 4, 0x444)
+    checks.reg("first call returned to instruction 1", 2, 0x111)
+    checks.reg("second subroutine ran", 5, 0x555)
+    checks.reg("second call returned to instruction 3", 3, 0x333)
+    checks.reg("sequential calls flushed wrong path", 7, 0)
+    checks.eq("stack pointer restored after sequential calls",
+              sig_value(dut.u_cpu_core.stack_pointer), 0x3FFF)
+    checks.reg("R15 restored to second call return address", 15, 3)
+    checks.mem("latest return address stored at stack top", 0x3FFF, 3)
+
+    # CALL target begins with RET. This checks the smallest legal subroutine
+    # and ensures the return path works without an intervening register write.
+    prog = [
+        call(3),                    # 0: save return address 1
+        load_imm(2, 0x222),         # 1: must execute after RET
+        jmp(5),                     # 2: finish
+        ret(),                      # 3: immediate return
+        load_imm(7, 0xBAD),         # 4: must not execute
+        jmp(5),                     # 5: finish loop
+    ]
+    await run_case(dut, prog, checks, cycles=900,
+                   name="CALL/RET: immediate return at subroutine entry")
+    checks.reg("immediate RET returned to caller", 2, 0x222)
+    checks.reg("immediate RET flushed fall-through", 7, 0)
+    checks.reg("immediate RET restored link register", 15, 1)
+    checks.eq("stack pointer restored after immediate RET",
+              sig_value(dut.u_cpu_core.stack_pointer), 0x3FFF)
+
     checks.summary()
     assert not checks.failed, (
         f"CPU pipeline stress regression failed: {len(checks.failed)} of "
         f"{checks.total} checks failed. See log above."
     )
+
+
+
 
