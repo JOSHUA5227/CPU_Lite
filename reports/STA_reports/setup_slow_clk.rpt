@@ -8,9 +8,1003 @@ Report : timing
 	-sort_by slack
 Design : cpu_interface
 Version: S-2021.06-SP2
-Date   : Mon Oct 12 02:56:53 2026
+Date   : Tue Oct 13 23:28:26 2026
 ****************************************
 
-No paths with slack less than 0.00.
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.55       1.42 r
+  u_cpu_core/U107/Y (AND2X1_HVT)                          0.31       1.73 r
+  u_cpu_core/U817/Y (INVX2_HVT)                           0.15       1.87 f
+  u_cpu_core/U115/Y (OAI22X1_HVT)                         0.42       2.29 r
+  u_cpu_core/U2175/S (FADDX1_HVT)                         0.78       3.07 f
+  u_cpu_core/U2195/S (FADDX1_HVT)                         0.80       3.88 r
+  u_cpu_core/U2335/S (FADDX1_HVT)                         0.86       4.73 f
+  u_cpu_core/U117/Y (NAND2X0_HVT)                         0.21       4.94 r
+  u_cpu_core/U953/Y (NAND3X0_HVT)                         0.33       5.27 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.47       5.74 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.84 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.15 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.48 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.61 f
+  u_cpu_core/U112/Y (AO21X1_HVT)                          0.24       6.85 f
+  u_cpu_core/U111/Y (AO21X1_HVT)                          0.40       7.26 f
+  u_cpu_core/U1657/Y (XNOR2X2_HVT)                        0.44       7.70 f
+  u_cpu_core/U113/Y (NOR4X0_HVT)                          0.64       8.34 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.25       8.58 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.91 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.20 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.20 r
+  data arrival time                                                  9.20
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.20
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.06
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.55       1.42 r
+  u_cpu_core/U107/Y (AND2X1_HVT)                          0.31       1.73 r
+  u_cpu_core/U817/Y (INVX2_HVT)                           0.15       1.87 f
+  u_cpu_core/U114/Y (OAI22X1_HVT)                         0.41       2.29 r
+  u_cpu_core/U2250/CO (FADDX1_HVT)                        0.49       2.77 r
+  u_cpu_core/U2324/CO (FADDX1_HVT)                        0.59       3.36 r
+  u_cpu_core/U2326/CO (FADDX1_HVT)                        0.54       3.90 r
+  u_cpu_core/U2335/S (FADDX1_HVT)                         0.83       4.73 f
+  u_cpu_core/U117/Y (NAND2X0_HVT)                         0.21       4.94 r
+  u_cpu_core/U953/Y (NAND3X0_HVT)                         0.33       5.27 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.47       5.74 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.84 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.15 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.48 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.61 f
+  u_cpu_core/U112/Y (AO21X1_HVT)                          0.24       6.85 f
+  u_cpu_core/U111/Y (AO21X1_HVT)                          0.40       7.26 f
+  u_cpu_core/U1657/Y (XNOR2X2_HVT)                        0.44       7.70 f
+  u_cpu_core/U113/Y (NOR4X0_HVT)                          0.64       8.33 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.25       8.58 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.90 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.20 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.20 r
+  data arrival time                                                  9.20
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.20
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.06
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.55       1.42 r
+  u_cpu_core/U107/Y (AND2X1_HVT)                          0.31       1.73 r
+  u_cpu_core/U817/Y (INVX2_HVT)                           0.15       1.87 f
+  u_cpu_core/U115/Y (OAI22X1_HVT)                         0.42       2.29 r
+  u_cpu_core/U2175/S (FADDX1_HVT)                         0.78       3.07 f
+  u_cpu_core/U2195/S (FADDX1_HVT)                         0.80       3.88 r
+  u_cpu_core/U2335/S (FADDX1_HVT)                         0.86       4.73 f
+  u_cpu_core/U117/Y (NAND2X0_HVT)                         0.21       4.94 r
+  u_cpu_core/U953/Y (NAND3X0_HVT)                         0.33       5.27 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.47       5.74 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.84 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.15 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.48 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.61 f
+  u_cpu_core/U106/Y (AO21X1_HVT)                          0.25       6.86 f
+  u_cpu_core/U105/Y (AO21X1_HVT)                          0.45       7.32 f
+  u_cpu_core/U788/Y (AO21X1_HVT)                          0.44       7.76 f
+  u_cpu_core/U1561/Y (XNOR2X2_HVT)                        0.50       8.25 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.33       8.58 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.90 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.19 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.19 r
+  data arrival time                                                  9.19
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.19
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.06
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.55       1.42 r
+  u_cpu_core/U107/Y (AND2X1_HVT)                          0.31       1.73 r
+  u_cpu_core/U817/Y (INVX2_HVT)                           0.15       1.87 f
+  u_cpu_core/U114/Y (OAI22X1_HVT)                         0.41       2.29 r
+  u_cpu_core/U2250/CO (FADDX1_HVT)                        0.49       2.77 r
+  u_cpu_core/U2324/CO (FADDX1_HVT)                        0.59       3.36 r
+  u_cpu_core/U2326/CO (FADDX1_HVT)                        0.54       3.90 r
+  u_cpu_core/U2335/S (FADDX1_HVT)                         0.83       4.73 f
+  u_cpu_core/U117/Y (NAND2X0_HVT)                         0.21       4.94 r
+  u_cpu_core/U953/Y (NAND3X0_HVT)                         0.33       5.27 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.47       5.74 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.84 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.15 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.48 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.61 f
+  u_cpu_core/U106/Y (AO21X1_HVT)                          0.25       6.86 f
+  u_cpu_core/U105/Y (AO21X1_HVT)                          0.45       7.32 f
+  u_cpu_core/U788/Y (AO21X1_HVT)                          0.44       7.76 f
+  u_cpu_core/U1561/Y (XNOR2X2_HVT)                        0.50       8.25 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.33       8.58 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.90 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.19 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.19 r
+  data arrival time                                                  9.19
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.19
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.06
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.55       1.42 r
+  u_cpu_core/U107/Y (AND2X1_HVT)                          0.31       1.73 r
+  u_cpu_core/U817/Y (INVX2_HVT)                           0.15       1.87 f
+  u_cpu_core/U114/Y (OAI22X1_HVT)                         0.41       2.29 r
+  u_cpu_core/U2250/CO (FADDX1_HVT)                        0.49       2.77 r
+  u_cpu_core/U2324/CO (FADDX1_HVT)                        0.59       3.36 r
+  u_cpu_core/U2326/CO (FADDX1_HVT)                        0.54       3.90 r
+  u_cpu_core/U2335/CO (FADDX1_HVT)                        0.58       4.48 r
+  u_cpu_core/U2336/Y (XOR3X2_HVT)                         0.93       5.42 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.32       5.73 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.84 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.15 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.48 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.61 f
+  u_cpu_core/U112/Y (AO21X1_HVT)                          0.24       6.85 f
+  u_cpu_core/U111/Y (AO21X1_HVT)                          0.40       7.25 f
+  u_cpu_core/U1657/Y (XNOR2X2_HVT)                        0.44       7.69 f
+  u_cpu_core/U113/Y (NOR4X0_HVT)                          0.64       8.33 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.25       8.58 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.90 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.19 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.19 r
+  data arrival time                                                  9.19
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.19
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.06
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.55       1.42 r
+  u_cpu_core/U107/Y (AND2X1_HVT)                          0.31       1.73 r
+  u_cpu_core/U817/Y (INVX2_HVT)                           0.15       1.87 f
+  u_cpu_core/U114/Y (OAI22X1_HVT)                         0.41       2.29 r
+  u_cpu_core/U2250/CO (FADDX1_HVT)                        0.49       2.77 r
+  u_cpu_core/U2324/CO (FADDX1_HVT)                        0.59       3.36 r
+  u_cpu_core/U2326/CO (FADDX1_HVT)                        0.54       3.90 r
+  u_cpu_core/U2335/CO (FADDX1_HVT)                        0.58       4.48 r
+  u_cpu_core/U2336/Y (XOR3X2_HVT)                         0.93       5.42 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.32       5.73 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.84 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.15 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.48 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.61 f
+  u_cpu_core/U106/Y (AO21X1_HVT)                          0.25       6.86 f
+  u_cpu_core/U105/Y (AO21X1_HVT)                          0.45       7.31 f
+  u_cpu_core/U788/Y (AO21X1_HVT)                          0.44       7.75 f
+  u_cpu_core/U1561/Y (XNOR2X2_HVT)                        0.50       8.25 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.33       8.58 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.90 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.19 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.19 r
+  data arrival time                                                  9.19
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.19
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.05
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.55       1.42 r
+  u_cpu_core/U107/Y (AND2X1_HVT)                          0.31       1.73 r
+  u_cpu_core/U817/Y (INVX2_HVT)                           0.15       1.87 f
+  u_cpu_core/U115/Y (OAI22X1_HVT)                         0.42       2.29 r
+  u_cpu_core/U2175/S (FADDX1_HVT)                         0.78       3.07 f
+  u_cpu_core/U2195/S (FADDX1_HVT)                         0.80       3.88 r
+  u_cpu_core/U2335/CO (FADDX1_HVT)                        0.60       4.48 r
+  u_cpu_core/U2336/Y (XOR3X2_HVT)                         0.93       5.41 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.32       5.73 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.84 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.14 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.48 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.60 f
+  u_cpu_core/U112/Y (AO21X1_HVT)                          0.24       6.85 f
+  u_cpu_core/U111/Y (AO21X1_HVT)                          0.40       7.25 f
+  u_cpu_core/U1657/Y (XNOR2X2_HVT)                        0.44       7.69 f
+  u_cpu_core/U113/Y (NOR4X0_HVT)                          0.64       8.33 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.25       8.58 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.90 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.19 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.19 r
+  data arrival time                                                  9.19
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.19
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.05
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.55       1.42 r
+  u_cpu_core/U107/Y (AND2X1_HVT)                          0.31       1.73 r
+  u_cpu_core/U817/Y (INVX2_HVT)                           0.15       1.87 f
+  u_cpu_core/U115/Y (OAI22X1_HVT)                         0.42       2.29 r
+  u_cpu_core/U2175/S (FADDX1_HVT)                         0.78       3.07 f
+  u_cpu_core/U2195/S (FADDX1_HVT)                         0.80       3.88 r
+  u_cpu_core/U2335/CO (FADDX1_HVT)                        0.60       4.48 r
+  u_cpu_core/U2336/Y (XOR3X2_HVT)                         0.93       5.41 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.32       5.73 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.84 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.14 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.48 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.60 f
+  u_cpu_core/U106/Y (AO21X1_HVT)                          0.25       6.86 f
+  u_cpu_core/U105/Y (AO21X1_HVT)                          0.45       7.31 f
+  u_cpu_core/U788/Y (AO21X1_HVT)                          0.44       7.75 f
+  u_cpu_core/U1561/Y (XNOR2X2_HVT)                        0.50       8.25 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.33       8.57 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.90 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.19 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.19 r
+  data arrival time                                                  9.19
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.19
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.05
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.53       1.40 f
+  u_cpu_core/U1424/Y (NBUFFX2_HVT)                        0.30       1.70 f
+  u_cpu_core/U115/Y (OAI22X1_HVT)                         0.58       2.28 r
+  u_cpu_core/U2175/S (FADDX1_HVT)                         0.78       3.06 f
+  u_cpu_core/U2195/S (FADDX1_HVT)                         0.80       3.87 r
+  u_cpu_core/U2335/S (FADDX1_HVT)                         0.86       4.72 f
+  u_cpu_core/U117/Y (NAND2X0_HVT)                         0.21       4.93 r
+  u_cpu_core/U953/Y (NAND3X0_HVT)                         0.33       5.26 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.47       5.73 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.83 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.14 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.47 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.60 f
+  u_cpu_core/U112/Y (AO21X1_HVT)                          0.24       6.84 f
+  u_cpu_core/U111/Y (AO21X1_HVT)                          0.40       7.25 f
+  u_cpu_core/U1657/Y (XNOR2X2_HVT)                        0.44       7.69 f
+  u_cpu_core/U113/Y (NOR4X0_HVT)                          0.64       8.33 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.25       8.57 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.90 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.19 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.19 r
+  data arrival time                                                  9.19
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.19
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.05
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[9]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[9]/CLK (DFFARX2_HVT)            0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[9]/Q (DFFARX2_HVT)              1.15       1.15 r
+  u_cpu_core/U214/Y (XNOR2X1_HVT)                         0.63       1.78 f
+  u_cpu_core/U1411/Y (OAI22X1_HVT)                        0.50       2.27 r
+  u_cpu_core/U2018/CO (FADDX1_HVT)                        0.54       2.82 r
+  u_cpu_core/U2035/CO (FADDX1_HVT)                        0.64       3.45 r
+  u_cpu_core/U2104/S (FADDX1_HVT)                         0.87       4.32 f
+  u_cpu_core/U2115/S (FADDX1_HVT)                         0.81       5.13 r
+  u_cpu_core/U1458/Y (XOR3X2_HVT)                         0.97       6.10 f
+  u_cpu_core/U871/Y (OR2X1_HVT)                           0.31       6.41 f
+  u_cpu_core/U870/Y (INVX1_HVT)                           0.11       6.52 r
+  u_cpu_core/U793/Y (OA21X1_HVT)                          0.33       6.84 r
+  u_cpu_core/U137/Y (OA21X1_HVT)                          0.33       7.17 r
+  u_cpu_core/U123/Y (OA21X1_HVT)                          0.38       7.55 r
+  u_cpu_core/U122/Y (NAND3X0_HVT)                         0.28       7.84 f
+  u_cpu_core/U905/Y (NAND3X0_HVT)                         0.29       8.13 r
+  u_cpu_core/U789/Y (AND3X1_HVT)                          0.49       8.62 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.28       8.89 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.19 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.19 r
+  data arrival time                                                  9.19
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.19
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.05
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.53       1.40 f
+  u_cpu_core/U1424/Y (NBUFFX2_HVT)                        0.30       1.70 f
+  u_cpu_core/U115/Y (OAI22X1_HVT)                         0.58       2.28 r
+  u_cpu_core/U2175/S (FADDX1_HVT)                         0.78       3.06 f
+  u_cpu_core/U2195/S (FADDX1_HVT)                         0.80       3.87 r
+  u_cpu_core/U2335/S (FADDX1_HVT)                         0.86       4.72 f
+  u_cpu_core/U117/Y (NAND2X0_HVT)                         0.21       4.93 r
+  u_cpu_core/U953/Y (NAND3X0_HVT)                         0.33       5.26 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.47       5.73 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.83 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.14 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.47 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.60 f
+  u_cpu_core/U106/Y (AO21X1_HVT)                          0.25       6.85 f
+  u_cpu_core/U105/Y (AO21X1_HVT)                          0.45       7.31 f
+  u_cpu_core/U788/Y (AO21X1_HVT)                          0.44       7.75 f
+  u_cpu_core/U1561/Y (XNOR2X2_HVT)                        0.50       8.24 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.33       8.57 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.89 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.19 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.19 r
+  data arrival time                                                  9.19
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.19
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.05
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[9]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[9]/CLK (DFFARX2_HVT)            0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[9]/Q (DFFARX2_HVT)              1.15       1.15 r
+  u_cpu_core/U214/Y (XNOR2X1_HVT)                         0.66       1.81 r
+  u_cpu_core/U1407/Y (OAI22X1_HVT)                        0.55       2.36 f
+  u_cpu_core/U1994/S (FADDX1_HVT)                         0.74       3.09 r
+  u_cpu_core/U1997/S (FADDX1_HVT)                         0.86       3.96 f
+  u_cpu_core/U2048/CO (FADDX1_HVT)                        0.46       4.42 f
+  u_cpu_core/U2005/S (FADDX1_HVT)                         0.78       5.20 r
+  u_cpu_core/U2093/S (FADDX1_HVT)                         0.79       5.99 f
+  u_cpu_core/U124/Y (NOR2X0_HVT)                          0.40       6.39 r
+  u_cpu_core/U772/Y (OA21X1_HVT)                          0.38       6.78 r
+  u_cpu_core/U137/Y (OA21X1_HVT)                          0.40       7.17 r
+  u_cpu_core/U123/Y (OA21X1_HVT)                          0.38       7.55 r
+  u_cpu_core/U122/Y (NAND3X0_HVT)                         0.28       7.84 f
+  u_cpu_core/U905/Y (NAND3X0_HVT)                         0.29       8.13 r
+  u_cpu_core/U789/Y (AND3X1_HVT)                          0.49       8.62 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.28       8.89 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.18 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.18 r
+  data arrival time                                                  9.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.18
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.05
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.53       1.40 f
+  u_cpu_core/U1424/Y (NBUFFX2_HVT)                        0.30       1.70 f
+  u_cpu_core/U115/Y (OAI22X1_HVT)                         0.58       2.28 r
+  u_cpu_core/U2175/S (FADDX1_HVT)                         0.78       3.06 f
+  u_cpu_core/U2195/S (FADDX1_HVT)                         0.80       3.87 r
+  u_cpu_core/U2335/CO (FADDX1_HVT)                        0.60       4.47 r
+  u_cpu_core/U2336/Y (XOR3X2_HVT)                         0.93       5.40 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.32       5.72 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.83 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.13 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.47 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.59 f
+  u_cpu_core/U112/Y (AO21X1_HVT)                          0.24       6.84 f
+  u_cpu_core/U111/Y (AO21X1_HVT)                          0.40       7.24 f
+  u_cpu_core/U1657/Y (XNOR2X2_HVT)                        0.44       7.68 f
+  u_cpu_core/U113/Y (NOR4X0_HVT)                          0.64       8.32 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.25       8.57 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.89 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.18 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.18 r
+  data arrival time                                                  9.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.18
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.04
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[23]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[23]/CLK (DFFARX2_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[23]/Q (DFFARX2_HVT)             1.11       1.11 r
+  u_cpu_core/U1695/Y (NAND2X0_HVT)                        0.23       1.34 f
+  u_cpu_core/U995/Y (MUX21X2_HVT)                         0.55       1.89 f
+  u_cpu_core/U1932/Y (OAI22X1_HVT)                        0.50       2.39 r
+  u_cpu_core/U1975/Y (XOR2X2_HVT)                         0.52       2.91 f
+  u_cpu_core/U1987/S (FADDX1_HVT)                         0.79       3.70 r
+  u_cpu_core/U1986/S (FADDX1_HVT)                         0.85       4.55 f
+  u_cpu_core/U2073/S (FADDX1_HVT)                         0.79       5.34 r
+  u_cpu_core/U2092/S (FADDX1_HVT)                         0.80       6.14 f
+  u_cpu_core/U773/Y (NAND2X0_HVT)                         0.20       6.35 r
+  u_cpu_core/U772/Y (OA21X1_HVT)                          0.43       6.77 r
+  u_cpu_core/U137/Y (OA21X1_HVT)                          0.40       7.17 r
+  u_cpu_core/U123/Y (OA21X1_HVT)                          0.38       7.55 r
+  u_cpu_core/U122/Y (NAND3X0_HVT)                         0.28       7.83 f
+  u_cpu_core/U905/Y (NAND3X0_HVT)                         0.29       8.12 r
+  u_cpu_core/U789/Y (AND3X1_HVT)                          0.49       8.61 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.28       8.89 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.18 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.18 r
+  data arrival time                                                  9.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.18
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.04
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[2]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[2]/CLK (DFFARX1_HVT)            0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[2]/Q (DFFARX1_HVT)              0.87       0.87 r
+  u_cpu_core/U786/Y (XOR2X2_HVT)                          0.55       1.42 f
+  u_cpu_core/U810/Y (AND2X1_HVT)                          0.31       1.73 f
+  u_cpu_core/U74/Y (INVX1_HVT)                            0.16       1.89 r
+  u_cpu_core/U771/Y (OA22X1_HVT)                          0.38       2.26 r
+  u_cpu_core/U844/Y (XNOR2X2_HVT)                         0.52       2.78 r
+  u_cpu_core/U2277/S (FADDX1_HVT)                         0.80       3.59 f
+  u_cpu_core/U1444/Y (XOR3X2_HVT)                         0.89       4.47 f
+  u_cpu_core/U819/Y (OR2X1_HVT)                           0.32       4.79 f
+  u_cpu_core/U94/Y (INVX1_HVT)                            0.11       4.89 r
+  u_cpu_core/U850/Y (OA21X1_HVT)                          0.32       5.22 r
+  u_cpu_core/U849/Y (OA21X1_HVT)                          0.36       5.57 r
+  u_cpu_core/U806/Y (OA21X1_HVT)                          0.34       5.91 r
+  u_cpu_core/U790/Y (OA21X1_HVT)                          0.40       6.30 r
+  u_cpu_core/U1716/Y (INVX2_HVT)                          0.14       6.44 f
+  u_cpu_core/U13/Y (INVX1_HVT)                            0.13       6.57 r
+  u_cpu_core/U1574/Y (XNOR2X2_HVT)                        0.47       7.04 r
+  u_cpu_core/U1572/Y (NAND3X0_HVT)                        0.25       7.29 f
+  u_cpu_core/U1571/Y (OR3X1_HVT)                          0.49       7.78 f
+  u_cpu_core/U113/Y (NOR4X0_HVT)                          0.54       8.32 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.25       8.57 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.89 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.18 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.18 r
+  data arrival time                                                  9.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.18
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.04
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[14]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[14]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[14]/Q (DFFARX1_HVT)             0.87       0.87 r
+  u_cpu_core/U108/Y (XNOR2X2_HVT)                         0.53       1.40 f
+  u_cpu_core/U1424/Y (NBUFFX2_HVT)                        0.30       1.70 f
+  u_cpu_core/U115/Y (OAI22X1_HVT)                         0.58       2.28 r
+  u_cpu_core/U2175/S (FADDX1_HVT)                         0.78       3.06 f
+  u_cpu_core/U2195/S (FADDX1_HVT)                         0.80       3.87 r
+  u_cpu_core/U2335/CO (FADDX1_HVT)                        0.60       4.47 r
+  u_cpu_core/U2336/Y (XOR3X2_HVT)                         0.93       5.40 f
+  u_cpu_core/U110/Y (OR2X1_HVT)                           0.32       5.72 f
+  u_cpu_core/U109/Y (INVX1_HVT)                           0.11       5.83 r
+  u_cpu_core/U841/Y (OA21X1_HVT)                          0.31       6.13 r
+  u_cpu_core/U116/Y (OA21X1_HVT)                          0.33       6.47 r
+  u_cpu_core/U135/Y (INVX2_HVT)                           0.13       6.59 f
+  u_cpu_core/U106/Y (AO21X1_HVT)                          0.25       6.85 f
+  u_cpu_core/U105/Y (AO21X1_HVT)                          0.45       7.30 f
+  u_cpu_core/U788/Y (AO21X1_HVT)                          0.44       7.74 f
+  u_cpu_core/U1561/Y (XNOR2X2_HVT)                        0.50       8.24 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.33       8.57 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.89 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.18 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.18 r
+  data arrival time                                                  9.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.18
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.04
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[16]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[16]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[16]/Q (DFFARX1_HVT)             0.91       0.91 r
+  u_cpu_core/U121/Y (XOR2X2_HVT)                          0.59       1.50 f
+  u_cpu_core/U120/Y (AND2X1_HVT)                          0.32       1.83 f
+  u_cpu_core/U147/Y (INVX4_HVT)                           0.15       1.98 r
+  u_cpu_core/U1034/Y (OAI22X1_HVT)                        0.42       2.39 f
+  u_cpu_core/U2087/S (FADDX1_HVT)                         0.81       3.20 r
+  u_cpu_core/U2129/Y (XOR3X2_HVT)                         0.95       4.15 f
+  u_cpu_core/U879/Y (XOR3X2_HVT)                          0.89       5.04 r
+  u_cpu_core/U2208/Y (XOR3X2_HVT)                         0.50       5.53 f
+  u_cpu_core/U777/Y (OR2X1_HVT)                           0.31       5.84 f
+  u_cpu_core/U775/Y (AO21X1_HVT)                          0.37       6.21 f
+  u_cpu_core/U1697/Y (AO21X1_HVT)                         0.39       6.61 f
+  u_cpu_core/U1643/Y (AO21X1_HVT)                         0.39       6.99 f
+  u_cpu_core/U779/Y (AO21X1_HVT)                          0.28       7.27 f
+  u_cpu_core/U778/Y (NAND2X0_HVT)                         0.19       7.46 r
+  u_cpu_core/U126/Y (NAND3X0_HVT)                         0.23       7.69 f
+  u_cpu_core/U893/Y (NAND3X0_HVT)                         0.26       7.96 r
+  u_cpu_core/U816/Y (AND2X1_HVT)                          0.31       8.26 r
+  u_cpu_core/U789/Y (AND3X1_HVT)                          0.35       8.61 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.28       8.89 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.18 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.18 r
+  data arrival time                                                  9.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.18
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.04
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[2]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[2]/CLK (DFFARX1_HVT)            0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[2]/Q (DFFARX1_HVT)              0.87       0.87 r
+  u_cpu_core/U786/Y (XOR2X2_HVT)                          0.55       1.42 f
+  u_cpu_core/U810/Y (AND2X1_HVT)                          0.31       1.73 f
+  u_cpu_core/U74/Y (INVX1_HVT)                            0.16       1.89 r
+  u_cpu_core/U770/Y (OAI22X1_HVT)                         0.43       2.31 f
+  u_cpu_core/U1993/S (FADDX1_HVT)                         0.77       3.08 r
+  u_cpu_core/U1996/CO (FADDX1_HVT)                        0.52       3.60 r
+  u_cpu_core/U2004/S (FADDX1_HVT)                         0.83       4.43 f
+  u_cpu_core/U2005/S (FADDX1_HVT)                         0.76       5.20 r
+  u_cpu_core/U2093/S (FADDX1_HVT)                         0.79       5.99 f
+  u_cpu_core/U124/Y (NOR2X0_HVT)                          0.40       6.39 r
+  u_cpu_core/U772/Y (OA21X1_HVT)                          0.38       6.77 r
+  u_cpu_core/U137/Y (OA21X1_HVT)                          0.40       7.17 r
+  u_cpu_core/U123/Y (OA21X1_HVT)                          0.38       7.55 r
+  u_cpu_core/U122/Y (NAND3X0_HVT)                         0.28       7.83 f
+  u_cpu_core/U905/Y (NAND3X0_HVT)                         0.29       8.12 r
+  u_cpu_core/U789/Y (AND3X1_HVT)                          0.49       8.61 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.28       8.89 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.18 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.18 r
+  data arrival time                                                  9.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.18
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.04
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[9]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[9]/CLK (DFFARX2_HVT)            0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[9]/QN (DFFARX2_HVT)             0.67       0.67 r
+  u_cpu_core/U996/Y (INVX4_HVT)                           0.28       0.95 f
+  u_cpu_core/U923/Y (OR2X1_HVT)                           0.33       1.27 f
+  u_cpu_core/U922/Y (OAI22X1_HVT)                         0.42       1.69 r
+  u_cpu_core/U102/Y (INVX2_HVT)                           0.15       1.84 f
+  u_cpu_core/U1411/Y (OAI22X1_HVT)                        0.42       2.26 r
+  u_cpu_core/U2018/CO (FADDX1_HVT)                        0.54       2.81 r
+  u_cpu_core/U2035/CO (FADDX1_HVT)                        0.64       3.44 r
+  u_cpu_core/U2104/S (FADDX1_HVT)                         0.87       4.32 f
+  u_cpu_core/U2115/S (FADDX1_HVT)                         0.81       5.13 r
+  u_cpu_core/U1458/Y (XOR3X2_HVT)                         0.97       6.09 f
+  u_cpu_core/U871/Y (OR2X1_HVT)                           0.31       6.40 f
+  u_cpu_core/U870/Y (INVX1_HVT)                           0.11       6.51 r
+  u_cpu_core/U793/Y (OA21X1_HVT)                          0.33       6.83 r
+  u_cpu_core/U137/Y (OA21X1_HVT)                          0.33       7.17 r
+  u_cpu_core/U123/Y (OA21X1_HVT)                          0.38       7.55 r
+  u_cpu_core/U122/Y (NAND3X0_HVT)                         0.28       7.83 f
+  u_cpu_core/U905/Y (NAND3X0_HVT)                         0.29       8.12 r
+  u_cpu_core/U789/Y (AND3X1_HVT)                          0.49       8.61 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.28       8.89 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.18 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.18 r
+  data arrival time                                                  9.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.18
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.04
+
+
+  Startpoint: u_cpu_core/exe_op_a_reg[16]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Endpoint: u_cpu_core/psr_reg[0]
+               (rising edge-triggered flip-flop clocked by fast_clk)
+  Path Group: fast_clk
+  Path Type: max
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock fast_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_cpu_core/exe_op_a_reg[16]/CLK (DFFARX1_HVT)           0.00       0.00 r
+  u_cpu_core/exe_op_a_reg[16]/Q (DFFARX1_HVT)             0.91       0.91 r
+  u_cpu_core/U121/Y (XOR2X2_HVT)                          0.59       1.50 f
+  u_cpu_core/U120/Y (AND2X1_HVT)                          0.32       1.83 f
+  u_cpu_core/U147/Y (INVX4_HVT)                           0.15       1.98 r
+  u_cpu_core/U885/Y (OAI22X1_HVT)                         0.41       2.39 f
+  u_cpu_core/U951/Y (XOR3X2_HVT)                          0.81       3.20 r
+  u_cpu_core/U2182/S (FADDX1_HVT)                         0.81       4.01 f
+  u_cpu_core/U2205/S (FADDX1_HVT)                         0.80       4.81 r
+  u_cpu_core/U2206/CO (FADDX1_HVT)                        0.57       5.38 r
+  u_cpu_core/U776/Y (AND2X1_HVT)                          0.38       5.76 r
+  u_cpu_core/U775/Y (AO21X1_HVT)                          0.41       6.17 r
+  u_cpu_core/U1697/Y (AO21X1_HVT)                         0.41       6.58 r
+  u_cpu_core/U1643/Y (AO21X1_HVT)                         0.40       6.98 r
+  u_cpu_core/U105/Y (AO21X1_HVT)                          0.29       7.28 r
+  u_cpu_core/U788/Y (AO21X1_HVT)                          0.45       7.72 r
+  u_cpu_core/U1561/Y (XNOR2X2_HVT)                        0.52       8.24 r
+  u_cpu_core/U857/Y (AND2X1_HVT)                          0.33       8.56 r
+  u_cpu_core/U1669/Y (NAND4X0_HVT)                        0.32       8.89 f
+  u_cpu_core/U881/Y (NAND2X0_HVT)                         0.29       9.18 r
+  u_cpu_core/psr_reg[0]/D (DFFARX1_HVT)                   0.00       9.18 r
+  data arrival time                                                  9.18
+
+  clock fast_clk (rise edge)                              6.67       6.67
+  clock network delay (ideal)                             0.00       6.67
+  clock reconvergence pessimism                           0.00       6.67
+  clock uncertainty                                      -0.07       6.60
+  u_cpu_core/psr_reg[0]/CLK (DFFARX1_HVT)                            6.60 r
+  library setup time                                     -0.46       6.14
+  data required time                                                 6.14
+  ------------------------------------------------------------------------------
+  data required time                                                 6.14
+  data arrival time                                                 -9.18
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -3.04
+
+Warning: report_timing has satisfied the max_paths criteria. There are 1430 further endpoints which have paths of interest with slack less than     0.00 that were not considered when generating this report. (UITE-502)
 
 1

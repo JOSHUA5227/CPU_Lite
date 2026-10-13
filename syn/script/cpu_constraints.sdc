@@ -5,7 +5,7 @@ set_clock_groups -asynchronous -group [get_clocks fast_clk] -group [get_clocks s
 
 set_false_path -from [get_ports rst_n]
 
-set_input_delay 3.33335 -clock [get_clocks fast_clk] [get_ports instruction] 
+set_input_delay 3.33335 -clock [get_clocks fast_clk] [get_ports {instruction instruct_addr}] 
 set_input_delay 7.14285 -clock [get_clocks slow_clk] [get_ports {mem_rvalid mem_rdata}] 
 
 set_clock_uncertainty 0.066667 [get_clocks fast_clk]

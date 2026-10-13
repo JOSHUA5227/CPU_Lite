@@ -12,6 +12,7 @@ module cpu_interface #(
     // PROGRAM MEMORY PORTS
     output wire [PROG_ADDR_WIDTH-1:0] cpu_pc,
     input  wire [DATA_WIDTH-1:0] instruction,
+    input  wire [PROG_ADDR_WIDTH-1:0] instruct_addr,
     output wire read_en,
 
     // DATA MEMORY PORTS
@@ -101,6 +102,7 @@ module cpu_interface #(
         .rst_n         (fast_rst_n),
 
         .instruction   (instruction),
+        .instruct_addr   (instruct_addr),
         .pc            (cpu_pc),
         .read_en       (read_en),
 

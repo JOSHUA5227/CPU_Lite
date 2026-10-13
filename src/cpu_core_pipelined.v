@@ -820,11 +820,11 @@ assign hazard_exe_rs2 = hazard_decode_rs2_en && (exe_rd == decode_rs2);
 wire hazard_exe_rd;
 assign hazard_exe_rd = hazard_decode_rd_source && (exe_rd == decode_rd);
 
-wire hazard_exe_any;
-assign hazard_exe_any = hazard_exe_rs1 || hazard_exe_rs2 || hazard_exe_rd || exe_hazard_ret;
-
 wire exe_hazard_ret;
 assign exe_hazard_ret = (decode_opcode == RET) && (exe_rd == 4'hF);
+
+wire hazard_exe_any;
+assign hazard_exe_any = hazard_exe_rs1 || hazard_exe_rs2 || hazard_exe_rd || exe_hazard_ret;
 
 wire mem_hazard_ret;
 assign mem_hazard_ret = (decode_opcode == RET) && (mem_rd == 4'hF);
