@@ -4,40 +4,28 @@ Report : constraint
         -all_violators
 Design : cpu_interface
 Version: S-2021.06-SP4
-Date   : Tue Oct 13 23:39:22 2026
+Date   : Tue Oct 13 23:48:43 2026
 ****************************************
 
-
-   max_transition
-
-                             Required        Actual
-   Net                      Transition     Transition        Slack
-   -----------------------------------------------------------------
-   u_cpu_core/n94               0.25           0.26          -0.01  (VIOLATED)
-       PIN :   u_cpu_core/exe_op_a_reg[7]/Q
-                                0.25           0.26          -0.01  (VIOLATED)
-   n1091                        0.23           0.23           0.00  (VIOLATED: increase significant digits)
-
-   -----------------------------------------------------------------
-   Total                      2                  -0.01  
 
    max_capacitance
 
                              Required        Actual
    Net                      Capacitance    Capacitance       Slack
    -----------------------------------------------------------------
-   n1102                       64.00          68.30          -4.30  (VIOLATED)
-   u_cpu_core/n7258            16.00          16.00           0.00  (VIOLATED: increase significant digits)
+   u_cpu_core/n5831            64.00          64.92          -0.92  (VIOLATED)
+   n1094                       64.00          64.76          -0.76  (VIOLATED)
+   u_cpu_core/n5832            64.00          64.55          -0.55  (VIOLATED)
 
    -----------------------------------------------------------------
-   Total                      2                  -4.30  
+   Total                      3                  -2.23  
 
    max_leakage_power
 
                              Required        Actual
    Design                   Leakage Power  Leakage Power     Slack
    -----------------------------------------------------------------
-   cpu_interface                0.00       56198764.00    -56198764.00
+   cpu_interface                0.00       1015114112.00  -1015114112.00
                                                                     (VIOLATED)
 
 

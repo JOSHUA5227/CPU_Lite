@@ -8,13 +8,13 @@ Report : timing
 	-sort_by slack
 Design : cpu_interface
 Version: S-2021.06-SP2
-Date   : Tue Oct 13 23:40:29 2026
+Date   : Tue Oct 13 23:49:40 2026
 ****************************************
 
 
   Startpoint: u_slow_reset_sync/q1_reg
                (rising edge-triggered flip-flop clocked by slow_clk)
-  Endpoint: u_memory_controller/reg_wdata_reg[27]
+  Endpoint: u_request_fifo/sync_w/q_reg[0][0]
                (removal check against rising-edge clock slow_clk)
   Path Group: **async_default**
   Path Type: min
@@ -23,29 +23,30 @@ Date   : Tue Oct 13 23:40:29 2026
   ------------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_slow_reset_sync/q1_reg/CLK (DFFARX1_RVT)              0.00       0.00 r
-  u_slow_reset_sync/q1_reg/Q (DFFARX1_RVT)                0.50       0.50 r
-  u_memory_controller/reg_wdata_reg[27]/RSTB (DFFARX1_RVT)
-                                                          0.00       0.50 r
-  data arrival time                                                  0.50
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U746/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_request_fifo/sync_w/q_reg[0][0]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock reconvergence pessimism                           0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_memory_controller/reg_wdata_reg[27]/CLK (DFFARX1_RVT)            0.14 r
-  library removal time                                    0.37       0.51
-  data required time                                                 0.51
+  u_request_fifo/sync_w/q_reg[0][0]/CLK (DFFARX1_LVT)                0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
   ------------------------------------------------------------------------------
-  data required time                                                 0.51
-  data arrival time                                                 -0.50
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
   ------------------------------------------------------------------------------
-  slack (VIOLATED)                                                  -0.02
+  slack (VIOLATED)                                                  -0.08
 
 
   Startpoint: u_slow_reset_sync/q1_reg
                (rising edge-triggered flip-flop clocked by slow_clk)
-  Endpoint: u_memory_controller/reg_wdata_reg[10]
+  Endpoint: u_response_fifo/w_ptr_gray_reg_reg[1]
                (removal check against rising-edge clock slow_clk)
   Path Group: **async_default**
   Path Type: min
@@ -54,29 +55,30 @@ Date   : Tue Oct 13 23:40:29 2026
   ------------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_slow_reset_sync/q1_reg/CLK (DFFARX1_RVT)              0.00       0.00 r
-  u_slow_reset_sync/q1_reg/Q (DFFARX1_RVT)                0.50       0.50 r
-  u_memory_controller/reg_wdata_reg[10]/RSTB (DFFARX1_RVT)
-                                                          0.00       0.50 r
-  data arrival time                                                  0.50
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U748/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_response_fifo/w_ptr_gray_reg_reg[1]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock reconvergence pessimism                           0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_memory_controller/reg_wdata_reg[10]/CLK (DFFARX1_RVT)            0.14 r
-  library removal time                                    0.37       0.51
-  data required time                                                 0.51
+  u_response_fifo/w_ptr_gray_reg_reg[1]/CLK (DFFARX1_LVT)            0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
   ------------------------------------------------------------------------------
-  data required time                                                 0.51
-  data arrival time                                                 -0.50
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
   ------------------------------------------------------------------------------
-  slack (VIOLATED)                                                  -0.02
+  slack (VIOLATED)                                                  -0.08
 
 
   Startpoint: u_slow_reset_sync/q1_reg
                (rising edge-triggered flip-flop clocked by slow_clk)
-  Endpoint: u_memory_controller/reg_wdata_reg[17]
+  Endpoint: u_memory_controller/reg_wdata_reg[6]
                (removal check against rising-edge clock slow_clk)
   Path Group: **async_default**
   Path Type: min
@@ -85,29 +87,30 @@ Date   : Tue Oct 13 23:40:29 2026
   ------------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_slow_reset_sync/q1_reg/CLK (DFFARX1_RVT)              0.00       0.00 r
-  u_slow_reset_sync/q1_reg/Q (DFFARX1_RVT)                0.50       0.50 r
-  u_memory_controller/reg_wdata_reg[17]/RSTB (DFFARX1_RVT)
-                                                          0.00       0.50 r
-  data arrival time                                                  0.50
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U746/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_wdata_reg[6]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock reconvergence pessimism                           0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_memory_controller/reg_wdata_reg[17]/CLK (DFFARX1_RVT)            0.14 r
-  library removal time                                    0.37       0.51
-  data required time                                                 0.51
+  u_memory_controller/reg_wdata_reg[6]/CLK (DFFARX1_LVT)             0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
   ------------------------------------------------------------------------------
-  data required time                                                 0.51
-  data arrival time                                                 -0.50
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
   ------------------------------------------------------------------------------
-  slack (VIOLATED)                                                  -0.02
+  slack (VIOLATED)                                                  -0.08
 
 
   Startpoint: u_slow_reset_sync/q1_reg
                (rising edge-triggered flip-flop clocked by slow_clk)
-  Endpoint: u_memory_controller/reg_wdata_reg[26]
+  Endpoint: u_memory_controller/reg_wdata_reg[7]
                (removal check against rising-edge clock slow_clk)
   Path Group: **async_default**
   Path Type: min
@@ -116,24 +119,57 @@ Date   : Tue Oct 13 23:40:29 2026
   ------------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_slow_reset_sync/q1_reg/CLK (DFFARX1_RVT)              0.00       0.00 r
-  u_slow_reset_sync/q1_reg/Q (DFFARX1_RVT)                0.50       0.50 r
-  u_memory_controller/reg_wdata_reg[26]/RSTB (DFFARX1_RVT)
-                                                          0.00       0.50 r
-  data arrival time                                                  0.50
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U748/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_wdata_reg[7]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock reconvergence pessimism                           0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_memory_controller/reg_wdata_reg[26]/CLK (DFFARX1_RVT)            0.14 r
-  library removal time                                    0.37       0.51
-  data required time                                                 0.51
+  u_memory_controller/reg_wdata_reg[7]/CLK (DFFARX1_LVT)             0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
   ------------------------------------------------------------------------------
-  data required time                                                 0.51
-  data arrival time                                                 -0.50
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
   ------------------------------------------------------------------------------
-  slack (VIOLATED)                                                  -0.02
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_wdata_reg[8]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U748/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_wdata_reg[8]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_wdata_reg[8]/CLK (DFFARX1_LVT)             0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
 
 
   Startpoint: u_slow_reset_sync/q1_reg
@@ -147,29 +183,30 @@ Date   : Tue Oct 13 23:40:29 2026
   ------------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_slow_reset_sync/q1_reg/CLK (DFFARX1_RVT)              0.00       0.00 r
-  u_slow_reset_sync/q1_reg/Q (DFFARX1_RVT)                0.50       0.50 r
-  u_memory_controller/reg_wdata_reg[12]/RSTB (DFFARX1_RVT)
-                                                          0.00       0.50 r
-  data arrival time                                                  0.50
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U746/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_wdata_reg[12]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock reconvergence pessimism                           0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_memory_controller/reg_wdata_reg[12]/CLK (DFFARX1_RVT)            0.14 r
-  library removal time                                    0.37       0.51
-  data required time                                                 0.51
+  u_memory_controller/reg_wdata_reg[12]/CLK (DFFARX1_LVT)            0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
   ------------------------------------------------------------------------------
-  data required time                                                 0.51
-  data arrival time                                                 -0.50
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
   ------------------------------------------------------------------------------
-  slack (VIOLATED)                                                  -0.02
+  slack (VIOLATED)                                                  -0.08
 
 
   Startpoint: u_slow_reset_sync/q1_reg
                (rising edge-triggered flip-flop clocked by slow_clk)
-  Endpoint: u_memory_controller/reg_addr_reg[1]
+  Endpoint: u_memory_controller/reg_addr_reg[12]
                (removal check against rising-edge clock slow_clk)
   Path Group: **async_default**
   Path Type: min
@@ -178,29 +215,30 @@ Date   : Tue Oct 13 23:40:29 2026
   ------------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_slow_reset_sync/q1_reg/CLK (DFFARX1_RVT)              0.00       0.00 r
-  u_slow_reset_sync/q1_reg/Q (DFFARX1_RVT)                0.50       0.50 r
-  u_memory_controller/reg_addr_reg[1]/RSTB (DFFARX1_RVT)
-                                                          0.00       0.50 r
-  data arrival time                                                  0.50
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U746/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_addr_reg[12]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock reconvergence pessimism                           0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_memory_controller/reg_addr_reg[1]/CLK (DFFARX1_RVT)              0.14 r
-  library removal time                                    0.37       0.51
-  data required time                                                 0.51
+  u_memory_controller/reg_addr_reg[12]/CLK (DFFARX1_LVT)             0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
   ------------------------------------------------------------------------------
-  data required time                                                 0.51
-  data arrival time                                                 -0.50
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
   ------------------------------------------------------------------------------
-  slack (VIOLATED)                                                  -0.02
+  slack (VIOLATED)                                                  -0.08
 
 
   Startpoint: u_slow_reset_sync/q1_reg
                (rising edge-triggered flip-flop clocked by slow_clk)
-  Endpoint: u_response_fifo/w1/w_ptr_reg[1]
+  Endpoint: u_memory_controller/reg_resp_data_reg[9]
                (removal check against rising-edge clock slow_clk)
   Path Group: **async_default**
   Path Type: min
@@ -209,23 +247,410 @@ Date   : Tue Oct 13 23:40:29 2026
   ------------------------------------------------------------------------------
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
-  u_slow_reset_sync/q1_reg/CLK (DFFARX1_RVT)              0.00       0.00 r
-  u_slow_reset_sync/q1_reg/Q (DFFARX1_RVT)                0.50       0.50 r
-  u_response_fifo/w1/w_ptr_reg[1]/RSTB (DFFARX1_RVT)      0.00       0.50 r
-  data arrival time                                                  0.50
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U746/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_resp_data_reg[9]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
 
   clock slow_clk (rise edge)                              0.00       0.00
   clock network delay (ideal)                             0.00       0.00
   clock reconvergence pessimism                           0.00       0.00
   clock uncertainty                                       0.14       0.14
-  u_response_fifo/w1/w_ptr_reg[1]/CLK (DFFARX1_RVT)                  0.14 r
-  library removal time                                    0.37       0.51
-  data required time                                                 0.51
+  u_memory_controller/reg_resp_data_reg[9]/CLK (DFFARX1_LVT)         0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
   ------------------------------------------------------------------------------
-  data required time                                                 0.51
-  data arrival time                                                 -0.50
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
   ------------------------------------------------------------------------------
-  slack (VIOLATED)                                                  -0.02
+  slack (VIOLATED)                                                  -0.08
 
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[11]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U748/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_resp_data_reg[11]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_resp_data_reg[11]/CLK (DFFARX1_LVT)        0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[16]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U748/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_resp_data_reg[16]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_resp_data_reg[16]/CLK (DFFARX1_LVT)        0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[17]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U746/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_resp_data_reg[17]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_resp_data_reg[17]/CLK (DFFARX1_LVT)        0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[18]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U746/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_resp_data_reg[18]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_resp_data_reg[18]/CLK (DFFARX1_LVT)        0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_resp_data_reg[19]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U746/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_resp_data_reg[19]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_resp_data_reg[19]/CLK (DFFARX1_LVT)        0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/present_state_reg[1]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U748/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/present_state_reg[1]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/present_state_reg[1]/CLK (DFFARX1_LVT)         0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_wdata_reg[0]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U748/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_wdata_reg[0]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_wdata_reg[0]/CLK (DFFARX1_LVT)             0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_wdata_reg[2]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U748/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_wdata_reg[2]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_wdata_reg[2]/CLK (DFFARX1_LVT)             0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_wdata_reg[13]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U748/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_wdata_reg[13]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_wdata_reg[13]/CLK (DFFARX1_LVT)            0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_wdata_reg[20]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U748/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_wdata_reg[20]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_wdata_reg[20]/CLK (DFFARX1_LVT)            0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_wdata_reg[22]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U746/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_wdata_reg[22]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_wdata_reg[22]/CLK (DFFARX1_LVT)            0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+
+  Startpoint: u_slow_reset_sync/q1_reg
+               (rising edge-triggered flip-flop clocked by slow_clk)
+  Endpoint: u_memory_controller/reg_wdata_reg[23]
+               (removal check against rising-edge clock slow_clk)
+  Path Group: **async_default**
+  Path Type: min
+
+  Point                                                   Incr       Path
+  ------------------------------------------------------------------------------
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  u_slow_reset_sync/q1_reg/CLK (DFFARX2_LVT)              0.00       0.00 r
+  u_slow_reset_sync/q1_reg/QN (DFFARX2_LVT)               0.16       0.16 f
+  U748/Y (INVX2_LVT)                                      0.11       0.27 r
+  u_memory_controller/reg_wdata_reg[23]/RSTB (DFFARX1_LVT)
+                                                          0.00       0.27 r
+  data arrival time                                                  0.27
+
+  clock slow_clk (rise edge)                              0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  clock reconvergence pessimism                           0.00       0.00
+  clock uncertainty                                       0.14       0.14
+  u_memory_controller/reg_wdata_reg[23]/CLK (DFFARX1_LVT)            0.14 r
+  library removal time                                    0.21       0.35
+  data required time                                                 0.35
+  ------------------------------------------------------------------------------
+  data required time                                                 0.35
+  data arrival time                                                 -0.27
+  ------------------------------------------------------------------------------
+  slack (VIOLATED)                                                  -0.08
+
+Warning: report_timing has satisfied the max_paths criteria. There are 150 further endpoints which have paths of interest with slack less than     0.00 that were not considered when generating this report. (UITE-502)
 
 1

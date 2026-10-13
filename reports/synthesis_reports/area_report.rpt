@@ -3,30 +3,30 @@
 Report : area
 Design : cpu_interface
 Version: S-2021.06-SP4
-Date   : Tue Oct 13 23:39:21 2026
+Date   : Tue Oct 13 23:48:42 2026
 ****************************************
 
 Information: Updating design information... (UID-85)
 Warning: Design 'cpu_interface' contains 1 high-fanout nets. A fanout number of 1000 will be used for delay calculations involving these nets. (TIM-134)
 Library(s) Used:
 
-    saed32rvt_ss0p75v25c (File: /fetools/work_area/frontend/SAED32_EDK/lib/stdcell_rvt/db_nldm/saed32rvt_ss0p75v25c.db)
+    saed32lvt_ss0p75v25c (File: /fetools/work_area/frontend/SAED32_EDK/lib/stdcell_lvt/db_nldm/saed32lvt_ss0p75v25c.db)
 
 Number of ports:                          447
-Number of nets:                         14174
-Number of cells:                        13323
-Number of combinational cells:          10750
+Number of nets:                         13802
+Number of cells:                        12926
+Number of combinational cells:          10353
 Number of sequential cells:              2570
 Number of macros/black boxes:               0
-Number of buf/inv:                       1062
-Number of references:                      30
+Number of buf/inv:                       1198
+Number of references:                      29
 
-Combinational area:              26745.352108
-Buf/Inv area:                     1470.985480
-Noncombinational area:           17539.494471
+Combinational area:              24831.393662
+Buf/Inv area:                     1577.980099
+Noncombinational area:           17541.019335
 Macro/Black Box area:                0.000000
-Net Interconnect area:           19583.668812
+Net Interconnect area:           18014.736495
 
-Total cell area:                 44284.846579
-Total area:                      63868.515392
+Total cell area:                 42372.412997
+Total area:                      60387.149492
 1
