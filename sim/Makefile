@@ -18,7 +18,8 @@ VERILOG_SOURCES = \
     $(PWD)/../src/async_fifo/mem.v \
     $(PWD)/../src/async_fifo/sync_multi.v \
     $(PWD)/../src/memory_controller.v \
-    $(PWD)/../src/data_memory.v
+    $(PWD)/../src/data_memory.v \
+    $(PWD)/../src/reset_sync.v
 
 WAVES = 1
 

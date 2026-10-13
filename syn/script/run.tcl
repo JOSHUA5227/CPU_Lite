@@ -6,11 +6,9 @@ analyze -f verilog ../src/async_fifo/async_fifo.v
 
 
 analyze -f verilog ../src/memory_controller.v
+analyze -f verilog ../src/reset_sync.v
 analyze -f verilog ../src/cache.v
 analyze -f verilog ../src/cpu_core_pipelined.v
-analyze -f verilog ../src/cpu.v
-#analyze -f verilog ../src/program_memory.v
-#analyze -f verilog ../src/data_memory.v
 analyze -f verilog ../src/cpu_interface.v
 elaborate cpu_interface
 
@@ -19,8 +17,6 @@ check_design
 
 write -format ddc -hier -output unmapped/unmapped_cpu_interface.ddc
 write -format verilog -hier -output unmapped/unmapped_cpu_interface.v
-#write -format ddc -hier -output unmapped/unmapped_cpu.ddc
-#write -format verilog -hier -output unmapped/unmapped_cpu.v
 
 source ./script/cpu_constraints.sdc
 
@@ -29,10 +25,8 @@ check_timing
 compile_ultra
 
 write -format ddc -hier -output mapped/mapped_cpu_interface.ddc
-#write -format ddc -hier -output mapped/mapped_cpu.ddc
 
 write -format verilog -hier -output mapped/mapped_cpu_interface.v
-#write -format verilog -hier -output mapped/mapped_cpu.v
 
 # Area report
 report_area > area_report.rpt

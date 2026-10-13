@@ -717,7 +717,7 @@ begin
   end
 end
 
-assign stall_en = mem_cache_req && !cpu_ready;
+assign stall_en = (mem_cache_req && !cpu_ready) ||( exe_opcode == HALT);
 
 //WriteBack Pipeline
 always@(posedge clk or negedge rst_n)
