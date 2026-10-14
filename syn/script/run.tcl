@@ -24,6 +24,9 @@ check_timing
 
 compile_ultra
 
+current_instance
+insert_buffer [get_pins {u_slow_reset_sync/q1_reg/Q}] NBUFFX16_RVT -new_net_names {net_PTECO_HOLD_NET1} -new_cell_names {U_PTECO_HOLD_BUF1}
+
 write -format ddc -hier -output mapped/mapped_cpu_interface.ddc
 
 write -format verilog -hier -output mapped/mapped_cpu_interface.v

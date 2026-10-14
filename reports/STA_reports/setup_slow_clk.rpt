@@ -8,7 +8,7 @@ Report : timing
 	-sort_by slack
 Design : cpu_interface
 Version: S-2021.06-SP2
-Date   : Tue Oct 13 23:49:40 2026
+Date   : Wed Oct 14 10:44:12 2026
 ****************************************
 
 No paths with slack less than 0.00.
